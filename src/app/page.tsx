@@ -23,7 +23,6 @@ import {
   CheckSquare,
   Square,
   ExternalLink,
-  MessageCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import type { NoticeResult } from "./api/process-notice/route";
@@ -229,10 +228,9 @@ export default function NoticeBridgeApp() {
       setResult(data);
       setActiveTab("whatsapp");
 
-      // Celebrate with subtle confetti
       try {
         confetti({
-          particleCount: 40,
+          particleCount: 35,
           spread: 60,
           origin: { y: 0.6 },
         });
@@ -315,11 +313,11 @@ export default function NoticeBridgeApp() {
           <div>
             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
               <h1 className="brand-title">NoticeBridge</h1>
-              <span className="badge-pill badge-emerald">AI Powered</span>
-              <span className="badge-pill badge-indigo">Vercel Ready</span>
+              <span className="badge-pill badge-blue">AI Powered</span>
+              <span className="badge-pill badge-emerald">Vercel Ready</span>
             </div>
             <p className="brand-subtitle">
-              Transforming Complex School Circulars into 30-Second WhatsApp & Multilingual Parent Notices
+              School Circular to 30-Second WhatsApp & Multilingual Parent Notice Engine
             </p>
           </div>
         </div>
@@ -331,8 +329,8 @@ export default function NoticeBridgeApp() {
             className="icon-btn"
             title="Configure Gemini API Key"
           >
-            <Settings style={{ width: "16px", height: "16px", color: "#818cf8" }} />
-            <span>{customApiKey ? "API Key Set ✓" : "Set API Key (Optional)"}</span>
+            <Settings style={{ width: "15px", height: "15px", color: "#2563eb" }} />
+            <span>{customApiKey ? "API Key Configured ✓" : "Set API Key (Optional)"}</span>
           </button>
 
           <a
@@ -350,12 +348,12 @@ export default function NoticeBridgeApp() {
       {/* Main Grid: Input Left, Output Right */}
       <div className="main-grid">
         {/* Left Column: Input Form */}
-        <div className="glass-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-              <FileText style={{ width: "16px", height: "16px", color: "#818cf8" }} />
-              <span style={{ fontSize: "0.78rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", color: "#cbd5e1" }}>
-                School Circular Input
+        <div className="white-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "0.5rem", borderBottom: "1px solid #f1f5f9" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
+              <FileText style={{ width: "16px", height: "16px", color: "#2563eb" }} />
+              <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#0f172a" }}>
+                Input Circular
               </span>
             </div>
             <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
@@ -379,8 +377,8 @@ export default function NoticeBridgeApp() {
           <div className="form-group">
             <div className="form-label">
               <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <Sparkles style={{ width: "13px", height: "13px", color: "#fbbf24" }} />
-                Try Sample Circulars:
+                <Sparkles style={{ width: "13px", height: "13px", color: "#d97706" }} />
+                Sample Circular Templates:
               </span>
             </div>
             <div className="presets-grid">
@@ -404,11 +402,11 @@ export default function NoticeBridgeApp() {
           {/* Circular Textarea */}
           <div className="form-group">
             <div className="form-label">
-              <span>Paste Circular / Notice Text</span>
+              <span>Paste Circular Text</span>
               {circularText && (
                 <button
                   onClick={() => setCircularText("")}
-                  style={{ background: "none", border: "none", color: "#fb7185", fontSize: "0.7rem", cursor: "pointer" }}
+                  style={{ background: "none", border: "none", color: "#e11d48", fontSize: "0.72rem", cursor: "pointer", fontWeight: 500 }}
                 >
                   Clear Text
                 </button>
@@ -418,7 +416,7 @@ export default function NoticeBridgeApp() {
               value={circularText}
               onChange={(e) => setCircularText(e.target.value)}
               rows={8}
-              placeholder="Paste raw circular text, PDF content, or announcement here..."
+              placeholder="Paste raw circular text, PDF announcements, or notices here..."
               className="form-textarea"
             />
           </div>
@@ -427,8 +425,8 @@ export default function NoticeBridgeApp() {
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
             <div className="form-group">
               <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <Languages style={{ width: "14px", height: "14px", color: "#34d399" }} />
-                Parent Language
+                <Languages style={{ width: "14px", height: "14px", color: "#16a34a" }} />
+                Target Language
               </label>
               <select
                 value={selectedLanguage}
@@ -444,7 +442,7 @@ export default function NoticeBridgeApp() {
             </div>
 
             <div className="form-group">
-              <label className="form-label">Message Tone</label>
+              <label className="form-label">Tone</label>
               <select
                 value={tone}
                 onChange={(e) => setTone(e.target.value)}
@@ -466,12 +464,12 @@ export default function NoticeBridgeApp() {
           >
             {isLoading ? (
               <>
-                <div style={{ width: "16px", height: "16px", border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
-                <span>Processing & Generating Updates...</span>
+                <div style={{ width: "15px", height: "15px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                <span>Processing Circular...</span>
               </>
             ) : (
               <>
-                <Send style={{ width: "16px", height: "16px" }} />
+                <Send style={{ width: "15px", height: "15px" }} />
                 <span>Transform into Parent Notice</span>
               </>
             )}
@@ -482,9 +480,9 @@ export default function NoticeBridgeApp() {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           {!result && !isLoading && (
             <div
-              className="glass-panel"
+              className="white-panel"
               style={{
-                padding: "2.5rem 1.5rem",
+                padding: "3rem 1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -495,32 +493,32 @@ export default function NoticeBridgeApp() {
                 borderStyle: "dashed",
               }}
             >
-              <div style={{ width: "4rem", height: "4rem", borderRadius: "50%", background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem" }}>
+              <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "50%", background: "#eff6ff", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem" }}>
                 📢
               </div>
-              <div style={{ maxWidth: "400px" }}>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#f8fafc" }}>
-                  Ready to Transform Your First Notice
+              <div style={{ maxWidth: "380px" }}>
+                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>
+                  No Circular Processed Yet
                 </h3>
-                <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "0.35rem", lineHeight: 1.5 }}>
-                  Select one of the sample circulars on the left (Sports Day, Exam Rules, Field Trip, or Monsoon Notice) or paste your own circular, then click <strong>"Transform into Parent Notice"</strong>.
+                <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: "0.35rem", lineHeight: 1.5 }}>
+                  Choose one of the sample templates on the left or paste your school circular, then click <strong>"Transform into Parent Notice"</strong>.
                 </p>
               </div>
 
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.4rem", marginTop: "0.5rem" }}>
-                <span className="badge-pill badge-indigo">📱 30-Sec WhatsApp Format</span>
-                <span className="badge-pill badge-emerald">🌐 Regional Translation</span>
-                <span className="badge-pill badge-amber">🔊 Voice Audio Read-Aloud</span>
-                <span className="badge-pill badge-rose">✍️ Action Checklist</span>
+              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.4rem", marginTop: "0.25rem" }}>
+                <span className="badge-pill badge-slate">📱 30-Sec WhatsApp Format</span>
+                <span className="badge-pill badge-slate">🌐 Regional Translation</span>
+                <span className="badge-pill badge-slate">🔊 Voice Audio Read-Aloud</span>
+                <span className="badge-pill badge-slate">✍️ Action Checklist</span>
               </div>
             </div>
           )}
 
           {isLoading && (
             <div
-              className="glass-panel"
+              className="white-panel"
               style={{
-                padding: "2.5rem",
+                padding: "3rem 1.5rem",
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
@@ -530,14 +528,14 @@ export default function NoticeBridgeApp() {
                 minHeight: "440px",
               }}
             >
-              <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "1rem", background: "rgba(99,102,241,0.25)", border: "1px solid rgba(99,102,241,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.8rem" }}>
+              <div style={{ width: "3.25rem", height: "3.25rem", borderRadius: "10px", background: "#eff6ff", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>
                 ⚡
               </div>
               <div>
-                <h3 style={{ fontSize: "1.05rem", fontWeight: 700, color: "#f8fafc" }}>
+                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>
                   Analyzing Circular Details...
                 </h3>
-                <p style={{ fontSize: "0.8rem", color: "#94a3b8", marginTop: "0.25rem" }}>
+                <p style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "0.25rem" }}>
                   Extracting dates, fees, actions, and translating to {selectedLanguage}...
                 </p>
               </div>
@@ -545,22 +543,22 @@ export default function NoticeBridgeApp() {
           )}
 
           {result && (
-            <div className="glass-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+            <div className="white-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
               {/* Notice Metadata Header */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingBottom: "0.75rem", borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f1f5f9" }}>
                 <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
                     <span className={`badge-pill ${result.urgency === "High" ? "badge-rose" : result.urgency === "Medium" ? "badge-amber" : "badge-emerald"}`}>
                       {result.urgency} Urgency
                     </span>
-                    <span className="badge-pill badge-indigo">{result.category}</span>
+                    <span className="badge-pill badge-blue">{result.category}</span>
                     <span className="badge-pill badge-emerald">{result.meta.readingTimeReduction}</span>
                   </div>
-                  <span style={{ fontSize: "0.7rem", color: "#64748b" }}>
+                  <span style={{ fontSize: "0.72rem", color: "#64748b" }}>
                     {result.meta.modelUsed}
                   </span>
                 </div>
-                <h2 style={{ fontSize: "1.15rem", fontWeight: 700, color: "#f8fafc" }}>
+                <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>
                   {result.title}
                 </h2>
               </div>
@@ -616,8 +614,8 @@ export default function NoticeBridgeApp() {
                   </div>
 
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <span style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                      Ready to broadcast into Class Parent WhatsApp Groups
+                    <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                      Ready to share directly to Parent Class WhatsApp Groups
                     </span>
 
                     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
@@ -627,8 +625,8 @@ export default function NoticeBridgeApp() {
                       >
                         {copiedKey === "whatsapp" ? (
                           <>
-                            <Check style={{ width: "14px", height: "14px", color: "#34d399" }} />
-                            <span style={{ color: "#34d399" }}>Copied!</span>
+                            <Check style={{ width: "14px", height: "14px", color: "#16a34a" }} />
+                            <span style={{ color: "#16a34a" }}>Copied!</span>
                           </>
                         ) : (
                           <>
@@ -641,9 +639,9 @@ export default function NoticeBridgeApp() {
                       <button
                         onClick={() => handleShareWhatsApp(result.whatsappNotice)}
                         style={{
-                          padding: "0.5rem 1rem",
-                          borderRadius: "0.75rem",
-                          background: "#059669",
+                          padding: "0.45rem 0.9rem",
+                          borderRadius: "8px",
+                          background: "#16a34a",
                           color: "#ffffff",
                           fontSize: "0.8rem",
                           fontWeight: 600,
@@ -652,7 +650,6 @@ export default function NoticeBridgeApp() {
                           gap: "0.4rem",
                           border: "none",
                           cursor: "pointer",
-                          boxShadow: "0 4px 12px rgba(5,150,105,0.3)",
                         }}
                       >
                         <Share2 style={{ width: "14px", height: "14px" }} />
@@ -674,10 +671,10 @@ export default function NoticeBridgeApp() {
                         className={`audio-play-btn ${isSpeaking ? "playing" : ""}`}
                         title={isSpeaking ? "Stop Audio" : "Listen Aloud"}
                       >
-                        {isSpeaking ? <VolumeX style={{ width: "18px", height: "18px" }} /> : <Volume2 style={{ width: "18px", height: "18px" }} />}
+                        {isSpeaking ? <VolumeX style={{ width: "17px", height: "17px" }} /> : <Volume2 style={{ width: "17px", height: "17px" }} />}
                       </button>
                       <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.8rem", fontWeight: 700, color: "#f8fafc" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem", fontWeight: 700, color: "#0f172a" }}>
                           <span>Listen Aloud (Speech Synthesizer)</span>
                           {isSpeaking && (
                             <div className="wave-container">
@@ -688,8 +685,8 @@ export default function NoticeBridgeApp() {
                             </div>
                           )}
                         </div>
-                        <p style={{ fontSize: "0.72rem", color: "#94a3b8" }}>
-                          Helps non-English literate or busy parents listen instantly
+                        <p style={{ fontSize: "0.72rem", color: "#64748b" }}>
+                          Helps non-English literate or busy parents listen to the announcement
                         </p>
                       </div>
                     </div>
@@ -703,7 +700,19 @@ export default function NoticeBridgeApp() {
                     </button>
                   </div>
 
-                  <div className="whatsapp-bubble" style={{ borderColor: "rgba(99,102,241,0.3)", background: "rgba(99,102,241,0.08)" }}>
+                  <div
+                    style={{
+                      background: "#ffffff",
+                      border: "1px solid #e2e8f0",
+                      borderRadius: "8px",
+                      padding: "1.15rem",
+                      color: "#0f172a",
+                      fontSize: "0.85rem",
+                      lineHeight: 1.6,
+                      whiteSpace: "pre-wrap",
+                      userSelect: "text",
+                    }}
+                  >
                     {result.translatedNotice}
                   </div>
 
@@ -714,8 +723,8 @@ export default function NoticeBridgeApp() {
                     >
                       {copiedKey === "translation" ? (
                         <>
-                          <Check style={{ width: "14px", height: "14px", color: "#34d399" }} />
-                          <span style={{ color: "#34d399" }}>Copied!</span>
+                          <Check style={{ width: "14px", height: "14px", color: "#16a34a" }} />
+                          <span style={{ color: "#16a34a" }}>Copied!</span>
                         </>
                       ) : (
                         <>
@@ -728,9 +737,9 @@ export default function NoticeBridgeApp() {
                     <button
                       onClick={() => handleShareWhatsApp(result.translatedNotice)}
                       style={{
-                        padding: "0.5rem 1rem",
-                        borderRadius: "0.75rem",
-                        background: "#4f46e5",
+                        padding: "0.45rem 0.9rem",
+                        borderRadius: "8px",
+                        background: "#2563eb",
                         color: "#ffffff",
                         fontSize: "0.8rem",
                         fontWeight: 600,
@@ -752,7 +761,7 @@ export default function NoticeBridgeApp() {
               {activeTab === "facts" && (
                 <div className="facts-grid">
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(245,158,11,0.15)", color: "#fbbf24" }}>
+                    <div className="fact-icon-box" style={{ background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>
                       <Calendar style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
@@ -762,7 +771,7 @@ export default function NoticeBridgeApp() {
                   </div>
 
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(59,130,246,0.15)", color: "#60a5fa" }}>
+                    <div className="fact-icon-box" style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}>
                       <Clock style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
@@ -772,17 +781,17 @@ export default function NoticeBridgeApp() {
                   </div>
 
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(244,63,94,0.15)", color: "#f87171" }}>
+                    <div className="fact-icon-box" style={{ background: "#fff1f2", color: "#be123c", border: "1px solid #fecdd3" }}>
                       <AlertCircle style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
                       <div className="fact-label">Strict Deadline</div>
-                      <div className="fact-value" style={{ color: "#fda4af" }}>{result.keyDetails.deadline}</div>
+                      <div className="fact-value" style={{ color: "#be123c" }}>{result.keyDetails.deadline}</div>
                     </div>
                   </div>
 
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(16,185,129,0.15)", color: "#34d399" }}>
+                    <div className="fact-icon-box" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
                       <DollarSign style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
@@ -792,7 +801,7 @@ export default function NoticeBridgeApp() {
                   </div>
 
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(168,85,247,0.15)", color: "#c084fc" }}>
+                    <div className="fact-icon-box" style={{ background: "#faf5ff", color: "#7e22ce", border: "1px solid #e9d5ff" }}>
                       <Shirt style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
@@ -802,7 +811,7 @@ export default function NoticeBridgeApp() {
                   </div>
 
                   <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "rgba(6,182,212,0.15)", color: "#22d3ee" }}>
+                    <div className="fact-icon-box" style={{ background: "#ecfeff", color: "#0e7490", border: "1px solid #a5f3fc" }}>
                       <Phone style={{ width: "16px", height: "16px" }} />
                     </div>
                     <div>
@@ -816,9 +825,9 @@ export default function NoticeBridgeApp() {
               {/* Tab 4: Parent Action Checklist */}
               {activeTab === "checklist" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#94a3b8" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#64748b" }}>
                     <span>
-                      Readiness: <strong style={{ color: "#f8fafc" }}>{completedCount} of {totalTasks}</strong> completed
+                      Readiness Status: <strong style={{ color: "#0f172a" }}>{completedCount} of {totalTasks}</strong> completed
                     </span>
                     <button
                       onClick={() =>
@@ -829,9 +838,9 @@ export default function NoticeBridgeApp() {
                           "checklist"
                         )
                       }
-                      style={{ background: "none", border: "none", color: "#818cf8", fontSize: "0.75rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem" }}
+                      style={{ background: "none", border: "none", color: "#2563eb", fontSize: "0.75rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem", fontWeight: 600 }}
                     >
-                      {copiedKey === "checklist" ? <Check style={{ width: "12px", height: "12px", color: "#34d399" }} /> : <Copy style={{ width: "12px", height: "12px" }} />}
+                      {copiedKey === "checklist" ? <Check style={{ width: "12px", height: "12px", color: "#16a34a" }} /> : <Copy style={{ width: "12px", height: "12px" }} />}
                       <span>Copy Checklist</span>
                     </button>
                   </div>
@@ -847,23 +856,25 @@ export default function NoticeBridgeApp() {
                         >
                           <div style={{ marginTop: "2px" }}>
                             {isDone ? (
-                              <CheckSquare style={{ width: "16px", height: "16px", color: "#34d399" }} />
+                              <CheckSquare style={{ width: "16px", height: "16px", color: "#16a34a" }} />
                             ) : (
-                              <Square style={{ width: "16px", height: "16px", color: "#64748b" }} />
+                              <Square style={{ width: "16px", height: "16px", color: "#94a3b8" }} />
                             )}
                           </div>
                           <div style={{ flex: 1, fontSize: "0.82rem" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                              <span>{item.task}</span>
+                              <span style={{ color: isDone ? "#94a3b8" : "#0f172a", fontWeight: isDone ? 400 : 500 }}>
+                                {item.task}
+                              </span>
                               {item.important && !isDone && (
                                 <span className="badge-pill badge-rose" style={{ fontSize: "0.65rem", padding: "0.15rem 0.45rem" }}>
-                                  Mandatory
+                                  Required
                                 </span>
                               )}
                             </div>
                             {item.deadline && (
                               <span style={{ fontSize: "0.72rem", color: "#64748b", display: "block", marginTop: "2px" }}>
-                                Deadline: {item.deadline}
+                                Due: {item.deadline}
                               </span>
                             )}
                           </div>
@@ -877,27 +888,27 @@ export default function NoticeBridgeApp() {
               {/* Tab 5: FAQs */}
               {activeTab === "faqs" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  <div style={{ fontSize: "0.75rem", color: "#94a3b8" }}>
-                    Anticipated questions parents will ask in class WhatsApp groups:
+                  <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                    Frequently asked questions by parents:
                   </div>
                   {result.frequentlyAskedQuestions.map((faq, idx) => (
                     <div
                       key={idx}
                       style={{
                         padding: "0.85rem 1rem",
-                        borderRadius: "0.85rem",
-                        background: "rgba(15,23,42,0.6)",
-                        border: "1px solid rgba(255,255,255,0.06)",
+                        borderRadius: "8px",
+                        background: "#ffffff",
+                        border: "1px solid #e2e8f0",
                         display: "flex",
                         flexDirection: "column",
                         gap: "0.35rem",
                       }}
                     >
-                      <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#c7d2fe", display: "flex", gap: "0.4rem" }}>
-                        <span style={{ color: "#818cf8" }}>Q:</span>
+                      <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1d4ed8", display: "flex", gap: "0.4rem" }}>
+                        <span>Q:</span>
                         <span>{faq.question}</span>
                       </div>
-                      <div style={{ fontSize: "0.78rem", color: "#cbd5e1", paddingLeft: "1.1rem", lineHeight: 1.5 }}>
+                      <div style={{ fontSize: "0.78rem", color: "#334155", paddingLeft: "1.1rem", lineHeight: 1.5 }}>
                         {faq.answer}
                       </div>
                     </div>
@@ -913,29 +924,29 @@ export default function NoticeBridgeApp() {
       {showSettingsModal && (
         <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.5rem" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "0.5rem" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <Settings style={{ width: "16px", height: "16px", color: "#818cf8" }} />
-                <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#f8fafc" }}>
-                  Gemini API Key Settings
+                <Settings style={{ width: "16px", height: "16px", color: "#2563eb" }} />
+                <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#0f172a" }}>
+                  API Key Configuration
                 </h3>
               </div>
               <button
                 onClick={() => setShowSettingsModal(false)}
-                style={{ background: "none", border: "none", color: "#94a3b8", cursor: "pointer", fontSize: "1rem" }}
+                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1rem" }}
               >
                 ✕
               </button>
             </div>
 
-            <p style={{ fontSize: "0.8rem", color: "#cbd5e1", lineHeight: 1.5 }}>
-              NoticeBridge works out-of-the-box using its <strong>Smart Heuristic Engine</strong>. To enable Google Gemini AI analysis and live multilingual translations:
+            <p style={{ fontSize: "0.8rem", color: "#475569", lineHeight: 1.5 }}>
+              NoticeBridge includes a built-in Smart Heuristic engine for offline/demo use. To enable Google Gemini AI analysis and live multilingual translations:
             </p>
 
-            <div style={{ padding: "0.75rem", borderRadius: "0.75rem", background: "rgba(99,102,241,0.15)", border: "1px solid rgba(99,102,241,0.3)", fontSize: "0.75rem", color: "#c7d2fe" }}>
+            <div style={{ padding: "0.75rem", borderRadius: "8px", background: "#eff6ff", border: "1px solid #bfdbfe", fontSize: "0.75rem", color: "#1e40af" }}>
               <strong>For Vercel Deployment:</strong>
-              <div style={{ marginTop: "0.25rem", color: "#e2e8f0" }}>
-                Add <code style={{ background: "rgba(0,0,0,0.4)", padding: "2px 5px", borderRadius: "4px", color: "#fde68a" }}>GEMINI_API_KEY</code> under <strong>Settings &gt; Environment Variables</strong> in your Vercel project.
+              <div style={{ marginTop: "0.25rem", color: "#334155" }}>
+                Add <code style={{ background: "#ffffff", padding: "2px 5px", borderRadius: "4px", color: "#b45309", border: "1px solid #cbd5e1" }}>GEMINI_API_KEY</code> under <strong>Settings &gt; Environment Variables</strong> in your Vercel project.
               </div>
             </div>
 
@@ -952,7 +963,7 @@ export default function NoticeBridgeApp() {
                 style={{ fontFamily: "monospace" }}
               />
               <span style={{ fontSize: "0.7rem", color: "#64748b", marginTop: "2px" }}>
-                Saved locally in browser localStorage. Free key available at aistudio.google.com.
+                Saved in your browser's localStorage. Free key available at aistudio.google.com.
               </span>
             </div>
 
@@ -966,10 +977,10 @@ export default function NoticeBridgeApp() {
               <button
                 onClick={() => handleSaveApiKey(customApiKey)}
                 style={{
-                  padding: "0.5rem 1rem",
-                  borderRadius: "0.75rem",
-                  background: "#4f46e5",
-                  color: "#fff",
+                  padding: "0.45rem 0.9rem",
+                  borderRadius: "8px",
+                  background: "#2563eb",
+                  color: "#ffffff",
                   fontSize: "0.8rem",
                   fontWeight: 600,
                   border: "none",
@@ -988,14 +999,14 @@ export default function NoticeBridgeApp() {
         <div>
           NoticeBridge • School Circular & Parent Communication Engine
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span>Deployable on Vercel</span>
           <span>•</span>
           <a
             href="https://github.com/srhagul30/School-project-.git"
             target="_blank"
             rel="noopener noreferrer"
-            style={{ color: "#818cf8" }}
+            style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
           >
             GitHub Repository
           </a>
