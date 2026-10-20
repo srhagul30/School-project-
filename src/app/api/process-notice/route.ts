@@ -36,6 +36,19 @@ export interface NoticeResult {
   };
 }
 
+// Unicode emojis safely escaped to guarantee 100% clean rendering across all operating systems & WhatsApp
+const EMOJI = {
+  megaphone: "\u{1F4E2}", // 📢
+  pin: "\u{1F4CC}",       // 📌
+  calendar: "\u{1F4C5}",  // 📅
+  clock: "\u{23F0}",      // ⏰
+  card: "\u{1F4B3}",      // 💳
+  money: "\u{1F4B0}",     // 💰
+  phone: "\u{1F4DE}",     // 📞
+  check: "\u{2705}",      // ✅
+  warning: "\u{26A0}\uFE0F", // ⚠️
+};
+
 // Fallback smart parser for offline/demo use without API key
 function generateSmartFallback(
   text: string,
@@ -48,7 +61,7 @@ function generateSmartFallback(
   // Detect key dates, phone numbers, money
   const dateMatch = text.match(/\b(?:\d{1,2}(?:st|nd|rd|th)?[\s/-](?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|[A-Za-z]+)[\s/-]?\d{2,4}|\d{1,2}[/-]\d{1,2}[/-]\d{2,4})\b/i);
   const timeMatch = text.match(/\b(?:\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))\b/i);
-  const feeMatch = text.match(/(?:Rs\.?|INR|₹|\$)\s*[\d,]+/i);
+  const feeMatch = text.match(/(?:Rs\.?|INR|\u20B9|\$)\s*[\d,]+/i);
   const phoneMatch = text.match(/\b(?:\+?\d{1,3}[-.\s]?)?\(?\d{3,5}\)?[-.\s]?\d{3,5}[-.\s]?\d{3,5}\b/);
 
   const detectedDate = dateMatch ? dateMatch[0] : "Check circular schedule";
@@ -74,89 +87,119 @@ function generateSmartFallback(
     urgency = "High";
   }
 
-  // Generate WhatsApp formatted text
-  const cleanFirstLine = text.split("\n").map(l => l.trim()).find(l => l.length > 5) || "Important Notice";
-  const title = cleanFirstLine.length > 50 ? cleanFirstLine.substring(0, 47) + "..." : cleanFirstLine;
+  // Smart subject line extraction (avoids duplicating school name)
+  let extractedTitle = "";
+  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
 
-  const whatsappNotice = `📢 *${schoolName.toUpperCase()} - PARENT UPDATE*
-━━━━━━━━━━━━━━━━━━━━
-📌 *${title}*
+  for (const line of lines) {
+    if (/^(subject|sub|regarding|re)\s*[:\-]/i.test(line)) {
+      extractedTitle = line.replace(/^(subject|sub|regarding|re)\s*[:\-]\s*/i, "").trim();
+      break;
+    }
+  }
+
+  if (!extractedTitle) {
+    for (const line of lines) {
+      const lineLower = line.toLowerCase();
+      const schoolLower = schoolName.toLowerCase();
+      if (
+        !lineLower.includes(schoolLower) &&
+        !lineLower.startsWith("circular") &&
+        !lineLower.startsWith("date:") &&
+        !lineLower.startsWith("ref:") &&
+        line.length > 5
+      ) {
+        extractedTitle = line;
+        break;
+      }
+    }
+  }
+
+  const title = extractedTitle || "Important School Update";
+
+  // Build clean, universally compatible WhatsApp broadcast
+  const whatsappNotice = `${EMOJI.megaphone} *${schoolName.toUpperCase()} - PARENT UPDATE*
+---------------------------------
+${EMOJI.pin} *Subject:* ${title}
 
 Dear Parents,
-Please note the essential details regarding the upcoming school announcement:
+Please note the essential details regarding the upcoming school circular:
 
-🗓️ *Date:* ${detectedDate}
-⏰ *Time:* ${detectedTime}
-💰 *Fees / Charges:* ${detectedFee}
-📞 *Contact / Queries:* ${detectedContact}
+${EMOJI.calendar} *Date:* ${detectedDate}
+${EMOJI.clock} *Time:* ${detectedTime}
+${EMOJI.card} *Fees / Charges:* ${detectedFee}
+${EMOJI.phone} *Contact / Queries:* ${detectedContact}
 
-✅ *What Parents Need To Do:*
-1️⃣ Review the scheduled timings and ensure punctuality.
-2️⃣ Sign and submit any required permission/acknowledgment slips.
-3️⃣ Check your child's uniform and kit as per circular guidelines.
+${EMOJI.check} *Required Actions for Parents:*
+1. Review the scheduled timings and ensure punctuality.
+2. Sign and submit required permission/acknowledgment slips.
+3. Check student's uniform and kit as per circular guidelines.
 
-⚠️ _Please avoid sending children to school if they are unwell._
+${EMOJI.warning} _Please avoid sending children to school if they are unwell._
 
-Warm regards,  
+Warm regards,
 *School Administration*`;
 
-  // Provide realistic multi-language greeting and highlights based on selected language
+  // Multilingual regional translations
   let translatedNotice = "";
   if (targetLanguage.toLowerCase().includes("tamil")) {
-    translatedNotice = `📢 *${schoolName} - பெற்றோர் முக்கிய அறிவிப்பு*
-━━━━━━━━━━━━━━━━━━━━
+    translatedNotice = `${EMOJI.megaphone} *${schoolName} - பெற்றோர் முக்கிய அறிவிப்பு*
+---------------------------------
+${EMOJI.pin} *பொருள்:* ${title}
+
 வணக்கம் பெற்றோர்களே! பள்ளி சுற்றறிக்கையின் முக்கிய குறிப்புகள் கீழே கொடுக்கப்பட்டுள்ளன:
 
-📌 *தலைப்பு:* ${title}
-🗓️ *தேதி:* ${detectedDate}
-⏰ *நேரம்:* ${detectedTime}
-💰 *கட்டணம்:* ${detectedFee}
-📞 *தொடர்புக்கு:* ${detectedContact}
+${EMOJI.calendar} *தேதி:* ${detectedDate}
+${EMOJI.clock} *நேரம்:* ${detectedTime}
+${EMOJI.card} *கட்டணம்:* ${detectedFee}
+${EMOJI.phone} *தொடர்புக்கு:* ${detectedContact}
 
-✅ *பெற்றோர்கள் செய்ய வேண்டியவை:*
-• தேதிகள் மற்றும் நேரத்தை குறித்துக் கொள்ளவும்.
-• சம்மதக் கடிதம் / ஆவணங்களை உரிய தேதியில் சமர்ப்பிக்கவும்.
-• மாணவர்கள் பள்ளி சீருடையில் வர வேண்டும்.
+${EMOJI.check} *பெற்றோர்கள் செய்ய வேண்டியவை:*
+1. தேதிகள் மற்றும் நேரத்தை குறித்துக் கொள்ளவும்.
+2. சம்மதக் கடிதம் / ஆவணங்களை உரிய தேதியில் சமர்ப்பிக்கவும்.
+3. மாணவர்கள் பள்ளி சீருடையில் வர வேண்டும்.
 
 நன்றி,
-பள்ளி நிர்வாகம்.`;
+*பள்ளி நிர்வாகம்*`;
   } else if (targetLanguage.toLowerCase().includes("hindi")) {
-    translatedNotice = `📢 *${schoolName} - अभिभावकों के लिए महत्वपूर्ण सूचना*
-━━━━━━━━━━━━━━━━━━━━
+    translatedNotice = `${EMOJI.megaphone} *${schoolName} - अभिभावक महत्वपूर्ण सूचना*
+---------------------------------
+${EMOJI.pin} *विषय:* ${title}
+
 सादर प्रणाम! आगामी स्कूल परिपत्र का मुख्य सारांश निम्नलिखित है:
 
-📌 *विषय:* ${title}
-🗓️ *तारीख:* ${detectedDate}
-⏰ *समय:* ${detectedTime}
-💰 *शुल्क:* ${detectedFee}
-📞 *संपर्क:* ${detectedContact}
+${EMOJI.calendar} *तारीख:* ${detectedDate}
+${EMOJI.clock} *समय:* ${detectedTime}
+${EMOJI.card} *शुल्क:* ${detectedFee}
+${EMOJI.phone} *संपर्क:* ${detectedContact}
 
-✅ *अभिभावकों के लिए निर्देश:*
-• कृपया तय समय पर बच्चे की उपस्थिति सुनिश्चित करें।
-• आवश्यक सहमति पत्र समय पर हस्ताक्षर करके भेजें।
-• निर्धारित ड्रेस कोड का पालन करें।
+${EMOJI.check} *अभिभावकों के लिए निर्देश:*
+1. कृपया तय समय पर बच्चे की उपस्थिति सुनिश्चित करें।
+2. आवश्यक सहमति पत्र समय पर हस्ताक्षर करके भेजें।
+3. निर्धारित ड्रेस कोड का पालन करें।
 
 सधन्यवाद,
-विद्यालय प्रशासन`;
+*विद्यालय प्रशासन*`;
   } else if (targetLanguage.toLowerCase().includes("spanish")) {
-    translatedNotice = `📢 *${schoolName} - AVISO IMPORTANTE PARA FAMILIAS*
-━━━━━━━━━━━━━━━━━━━━
+    translatedNotice = `${EMOJI.megaphone} *${schoolName} - AVISO IMPORTANTE PARA FAMILIAS*
+---------------------------------
+${EMOJI.pin} *Asunto:* ${title}
+
 Estimadas familias:
 Compartimos los puntos clave del reciente comunicado escolar:
 
-📌 *Asunto:* ${title}
-🗓️ *Fecha:* ${detectedDate}
-⏰ *Horario:* ${detectedTime}
-💰 *Costos:* ${detectedFee}
-📞 *Contacto:* ${detectedContact}
+${EMOJI.calendar} *Fecha:* ${detectedDate}
+${EMOJI.clock} *Horario:* ${detectedTime}
+${EMOJI.card} *Costos:* ${detectedFee}
+${EMOJI.phone} *Contacto:* ${detectedContact}
 
-✅ *Acciones Requeridas:*
-• Confirmar asistencia y revisar los horarios.
-• Firmar y enviar el formulario de autorización a tiempo.
-• Asegurar que los alumnos vistan el uniforme reglamentario.
+${EMOJI.check} *Acciones Requeridas:*
+1. Confirmar asistencia y revisar los horarios.
+2. Firmar y enviar el formulario de autorización a tiempo.
+3. Asegurar que los alumnos vistan el uniforme reglamentario.
 
 Atentamente,
-Dirección Escolar`;
+*Dirección Escolar*`;
   } else {
     translatedNotice = whatsappNotice;
   }
@@ -197,7 +240,7 @@ Dirección Escolar`;
     ],
     meta: {
       isMock: true,
-      modelUsed: "NoticeBridge Smart Heuristic Engine (Add API key for Gemini Deep AI)",
+      modelUsed: "NoticeBridge Smart Heuristic Engine",
       originalWordCount: wordCount,
       summaryWordCount: Math.round(wordCount * 0.28) || 50,
       readingTimeReduction: "75% time saved for parents",
@@ -236,7 +279,7 @@ export async function POST(req: NextRequest) {
 Your task is to transform dense, formal, multi-page school circulars and administrative announcements into clear, friendly, and actionable parent updates.
 
 Rules:
-1. "whatsappNotice": A WhatsApp broadcast message formatted with emojis, bold text (*word*), bullet points, and clean sections. It MUST take less than 30 seconds to read.
+1. "whatsappNotice": A WhatsApp broadcast message formatted with clean emojis (like 📢, 📌, 📅, ⏰, 💳, 📞, ✅, ⚠️), bold text (*word*), simple numbered bullets (1., 2., 3.), and divider lines (---------------------------------). It MUST take less than 30 seconds to read. Avoid duplicating the school name in the subject line.
 2. "translatedNotice": Translate the core message into ${targetLanguage}. It must feel natural, polite, respectful, and culturally appropriate for parents. Preserve numbers, dates, times, and proper nouns accurately.
 3. "audioScript": A concise, natural spoken script (in plain English or simple terms) suitable for browser text-to-speech audio for busy or illiterate parents.
 4. "keyDetails": Extract or infer key facts (eventDate, timings, venue, feeOrAmount, dressCode, deadline, contactPerson).
@@ -312,8 +355,6 @@ ${circularText}
             modelSuccessName = model;
             break;
           }
-        } else {
-          console.warn(`Model ${model} returned status: ${response.status}`);
         }
       } catch (err) {
         console.warn(`Error trying ${model}:`, err);
@@ -321,7 +362,6 @@ ${circularText}
     }
 
     if (!aiResponseText) {
-      console.warn("AI generation failed or quota reached. Serving smart fallback.");
       const fallbackResult = generateSmartFallback(circularText, targetLanguage, schoolName);
       return NextResponse.json({
         ...fallbackResult,
