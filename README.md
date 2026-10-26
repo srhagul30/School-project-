@@ -34,7 +34,7 @@ Schools routinely send out dense 2-to-3-page formal circulars regarding sports e
 
 - **Framework**: [Next.js 16 (App Router)](https://nextjs.org/) + React 19 + TypeScript
 - **Styling**: Pure Modern Vanilla CSS (Glassmorphism, dark/light harmonious design system, zero bloated CSS runtime)
-- **AI Engine**: Google Gemini API (`gemini-2.5-flash` / `gemini-1.5-flash`) via Next.js Serverless Route (`/api/process-notice`)
+- **AI Engine**: Google Gemini API (`gemini-3.8-flash` / `gemini-2.5-flash`) via Next.js Serverless Route (`/api/process-notice`)
 - **Offline Resilience**: Built-in Smart Heuristic Engine that allows the app to function flawlessly even if an API key is not yet set or during offline demos!
 - **Audio**: Native Browser Web Speech API (`window.speechSynthesis`)
 - **Icons**: Lucide React

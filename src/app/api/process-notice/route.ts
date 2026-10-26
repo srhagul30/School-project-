@@ -321,10 +321,10 @@ Original School Circular / Announcement:
 ${circularText}
 """`;
 
-    // Attempt Gemini 2.5 Flash, fallback to gemini-1.5-flash
-    const modelsToTry = ["gemini-2.5-flash", "gemini-1.5-flash"];
+    // Attempt Gemini 3.8 Flash, fallback to gemini-2.5-flash / gemini-1.5-flash
+    const modelsToTry = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
     let aiResponseText: string | null = null;
-    let modelSuccessName = "gemini-2.5-flash";
+    let modelSuccessName = "gemini-3.8-flash";
 
     for (const model of modelsToTry) {
       try {
