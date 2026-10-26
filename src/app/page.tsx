@@ -7,7 +7,6 @@ import {
   Check,
   Volume2,
   VolumeX,
-  Sparkles,
   Share2,
   Settings,
   AlertCircle,
@@ -23,15 +22,17 @@ import {
   CheckSquare,
   Square,
   ExternalLink,
+  Sparkles,
+  Zap,
+  X,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import type { NoticeResult } from "./api/process-notice/route";
 
-// Sample circular presets for instant one-click demonstration
 const PRESET_CIRCULARS = [
   {
     id: "sports-day",
-    title: "🏆 Annual Sports Day 2026",
+    title: "Annual Sports Day 2026",
     tag: "Sports & Events",
     schoolName: "St. Xavier's International School",
     language: "Tamil",
@@ -45,9 +46,9 @@ Dear Parents and Guardians,
 
 We are immensely pleased to announce that our 32nd Annual Sports Meet will be celebrated on Saturday, 14th November 2026, at the Main School Sports Stadium from 8:30 AM to 1:30 PM.
 
-All students from Grade 1 to 12 are mandated to assemble by 7:45 AM in their respective House T-Shirts (Emerald, Ruby, Sapphire, Topaz) along with white sports shoes and house caps. 
+All students from Grade 1 to 12 are mandated to assemble by 7:45 AM in their respective House T-Shirts (Emerald, Ruby, Sapphire, Topaz) along with white sports shoes and house caps.
 
-Parents are cordially invited to witness the march past, track events, and aerobic drill presentations. Parents are requested to be seated in Pavilion Block B by 8:15 AM with their official Parent ID cards. 
+Parents are cordially invited to witness the march past, track events, and aerobic drill presentations. Parents are requested to be seated in Pavilion Block B by 8:15 AM with their official Parent ID cards.
 
 Please take note of the following logistical arrangements:
 1. School bus routes will operate 30 minutes earlier than usual in the morning. Return buses will depart from campus at 2:00 PM.
@@ -64,7 +65,7 @@ Principal`,
   },
   {
     id: "term-exam",
-    title: "📝 Final Term Examination Rules",
+    title: "Final Term Examination Rules",
     tag: "Exams",
     schoolName: "Delhi Model Public School",
     language: "Hindi",
@@ -94,7 +95,7 @@ Vice Principal (Academics)`,
   },
   {
     id: "planetarium-trip",
-    title: "🚌 Science Field Trip & Fees",
+    title: "Science Field Trip & Fees",
     tag: "Field Trip",
     schoolName: "Greenwood Valley Academy",
     language: "Tamil",
@@ -127,7 +128,7 @@ Academic Director`,
   },
   {
     id: "rainy-day",
-    title: "🌧️ Emergency Monsoon Advisory",
+    title: "Emergency Monsoon Advisory",
     tag: "Emergency",
     schoolName: "National Public School",
     language: "Telugu",
@@ -156,14 +157,14 @@ National Public School`,
 ];
 
 const AVAILABLE_LANGUAGES = [
-  { code: "ta-IN", name: "Tamil", nativeName: "தமிழ்", flag: "🇮🇳" },
-  { code: "hi-IN", name: "Hindi", nativeName: "हिन्दी", flag: "🇮🇳" },
-  { code: "te-IN", name: "Telugu", nativeName: "తెలుగు", flag: "🇮🇳" },
-  { code: "ml-IN", name: "Malayalam", nativeName: "മലയാളം", flag: "🇮🇳" },
-  { code: "es-ES", name: "Spanish", nativeName: "Español", flag: "🇪🇸" },
-  { code: "fr-FR", name: "French", nativeName: "Français", flag: "🇫🇷" },
-  { code: "ar-SA", name: "Arabic", nativeName: "العربية", flag: "🇦🇪" },
-  { code: "en-US", name: "Plain English", nativeName: "Simple English", flag: "🇬🇧" },
+  { code: "ta-IN", name: "Tamil", nativeName: "தமிழ்" },
+  { code: "hi-IN", name: "Hindi", nativeName: "हिन्दी" },
+  { code: "te-IN", name: "Telugu", nativeName: "తెలుగు" },
+  { code: "ml-IN", name: "Malayalam", nativeName: "മലയാളം" },
+  { code: "es-ES", name: "Spanish", nativeName: "Español" },
+  { code: "fr-FR", name: "French", nativeName: "Français" },
+  { code: "ar-SA", name: "Arabic", nativeName: "العربية" },
+  { code: "en-US", name: "Plain English", nativeName: "Simple English" },
 ];
 
 export default function NoticeBridgeApp() {
@@ -179,14 +180,10 @@ export default function NoticeBridgeApp() {
   const [activeTab, setActiveTab] = useState<"whatsapp" | "translation" | "facts" | "checklist" | "faqs">("whatsapp");
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  // Audio Speech state
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [speechRate, setSpeechRate] = useState<number>(1.0);
-
-  // Checklist state
   const [checkedTasks, setCheckedTasks] = useState<Record<string, boolean>>({});
 
-  // Load custom API key from localStorage
   useEffect(() => {
     const savedKey = localStorage.getItem("noticebridge_gemini_key");
     if (savedKey) setCustomApiKey(savedKey);
@@ -198,10 +195,8 @@ export default function NoticeBridgeApp() {
     setShowSettingsModal(false);
   };
 
-  // Process circular
   const handleProcess = async () => {
     if (!circularText.trim()) return;
-
     setIsLoading(true);
     setResult(null);
     setCheckedTasks({});
@@ -221,22 +216,13 @@ export default function NoticeBridgeApp() {
       });
 
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to transform circular");
-      }
+      if (!response.ok) throw new Error(data.error || "Failed to transform circular");
 
       setResult(data);
       setActiveTab("whatsapp");
-
       try {
-        confetti({
-          particleCount: 35,
-          spread: 60,
-          origin: { y: 0.6 },
-        });
-      } catch (e) {
-        // Safe fallback
-      }
+        confetti({ particleCount: 30, spread: 55, origin: { y: 0.6 } });
+      } catch (_) {}
     } catch (err: any) {
       alert("Error: " + (err.message || "Failed to process notice."));
     } finally {
@@ -244,59 +230,47 @@ export default function NoticeBridgeApp() {
     }
   };
 
-  // Copy helper
   const handleCopy = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // Open in WhatsApp
   const handleShareWhatsApp = (text: string) => {
-    const url = `https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`;
-    window.open(url, "_blank");
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, "_blank");
   };
 
-  // Audio speech synthesis
   const handlePlaySpeech = (textToSpeak: string) => {
     if (!("speechSynthesis" in window)) {
       alert("Text-to-speech is not supported in this browser.");
       return;
     }
-
     if (isSpeaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
       return;
     }
-
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
     utterance.rate = speechRate;
-
     const voices = window.speechSynthesis.getVoices();
-    const matchingVoice = voices.find(
+    const match = voices.find(
       (v) =>
         v.lang.toLowerCase().includes(selectedLanguage.toLowerCase().substring(0, 2)) ||
         v.name.toLowerCase().includes("natural")
     );
-    if (matchingVoice) utterance.voice = matchingVoice;
-
+    if (match) utterance.voice = match;
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
-
     window.speechSynthesis.speak(utterance);
     setIsSpeaking(true);
   };
 
   const stopSpeech = () => {
-    if ("speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 
-  // Toggle checklist item
   const toggleTask = (id: string) => {
     setCheckedTasks((prev) => ({ ...prev, [id]: !prev[id] }));
   };
@@ -304,64 +278,67 @@ export default function NoticeBridgeApp() {
   const completedCount = Object.values(checkedTasks).filter(Boolean).length;
   const totalTasks = result?.actionChecklist?.length || 0;
 
+  const urgencyClass =
+    result?.urgency === "High"
+      ? "badge-red"
+      : result?.urgency === "Medium"
+      ? "badge-amber"
+      : "badge-green";
+
   return (
     <main className="app-container">
-      {/* Top Header Bar */}
+      {/* Header */}
       <header className="app-header">
         <div className="header-brand">
-          <div className="logo-badge">🏫</div>
+          <div className="logo-mark">
+            <FileText style={{ width: 18, height: 18 }} />
+          </div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
               <h1 className="brand-title">NoticeBridge</h1>
-              <span className="badge-pill badge-blue">AI Powered</span>
-              <span className="badge-pill badge-emerald">Vercel Ready</span>
+              <span className="badge badge-blue">AI</span>
             </div>
-            <p className="brand-subtitle">
-              School Circular to 30-Second WhatsApp & Multilingual Parent Notice Engine
-            </p>
+            <p className="brand-subtitle">School Circular to WhatsApp Parent Notice — in seconds</p>
           </div>
         </div>
 
-        {/* Quick Settings & GitHub */}
         <div className="header-actions">
           <button
             onClick={() => setShowSettingsModal(true)}
-            className="icon-btn"
+            className="btn btn-ghost"
             title="Configure Gemini API Key"
           >
-            <Settings style={{ width: "15px", height: "15px", color: "#2563eb" }} />
-            <span>{customApiKey ? "API Key Configured ✓" : "Set API Key (Optional)"}</span>
+            <Settings style={{ width: 14, height: 14 }} />
+            <span>{customApiKey ? "API Key Set" : "API Key"}</span>
           </button>
-
           <a
             href="https://github.com/srhagul30/School-project-.git"
             target="_blank"
             rel="noopener noreferrer"
-            className="icon-btn"
+            className="btn btn-ghost"
           >
-            <ExternalLink style={{ width: "14px", height: "14px" }} />
+            <ExternalLink style={{ width: 13, height: 13 }} />
             <span>GitHub</span>
           </a>
         </div>
       </header>
 
-      {/* Main Grid: Input Left, Output Right */}
+      {/* Main Grid */}
       <div className="main-grid">
-        {/* Left Column: Input Form */}
-        <div className="white-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingBottom: "0.5rem", borderBottom: "1px solid #f1f5f9" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem" }}>
-              <FileText style={{ width: "16px", height: "16px", color: "#2563eb" }} />
-              <span style={{ fontSize: "0.8rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em", color: "#0f172a" }}>
-                Input Circular
-              </span>
-            </div>
-            <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+        {/* LEFT: Input Panel */}
+        <div className="card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          {/* Panel header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span className="section-label">
+              <FileText style={{ width: 13, height: 13 }} />
+              Input Circular
+            </span>
+            <span className="word-count">
               {circularText.trim().split(/\s+/).filter(Boolean).length} words
             </span>
           </div>
 
-          {/* School Name */}
+          {/* School name */}
           <div className="form-group">
             <label className="form-label">School / Institution Name</label>
             <input
@@ -373,12 +350,12 @@ export default function NoticeBridgeApp() {
             />
           </div>
 
-          {/* Presets */}
+          {/* Preset templates */}
           <div className="form-group">
             <div className="form-label">
-              <span style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <Sparkles style={{ width: "13px", height: "13px", color: "#d97706" }} />
-                Sample Circular Templates:
+              <span style={{ display: "flex", alignItems: "center", gap: "0.35rem" }}>
+                <Sparkles style={{ width: 12, height: 12, color: "#d97706" }} />
+                Sample Templates
               </span>
             </div>
             <div className="presets-grid">
@@ -399,34 +376,42 @@ export default function NoticeBridgeApp() {
             </div>
           </div>
 
-          {/* Circular Textarea */}
+          {/* Textarea */}
           <div className="form-group">
             <div className="form-label">
-              <span>Paste Circular Text</span>
+              <span>Circular Text</span>
               {circularText && (
                 <button
                   onClick={() => setCircularText("")}
-                  style={{ background: "none", border: "none", color: "#e11d48", fontSize: "0.72rem", cursor: "pointer", fontWeight: 500 }}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    color: "#dc2626",
+                    fontSize: "0.72rem",
+                    cursor: "pointer",
+                    fontWeight: 500,
+                    padding: 0,
+                  }}
                 >
-                  Clear Text
+                  Clear
                 </button>
               )}
             </div>
             <textarea
               value={circularText}
               onChange={(e) => setCircularText(e.target.value)}
-              rows={8}
-              placeholder="Paste raw circular text, PDF announcements, or notices here..."
+              rows={9}
+              placeholder="Paste the full circular or announcement text here..."
               className="form-textarea"
             />
           </div>
 
-          {/* Target Language & Tone */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.75rem" }}>
+          {/* Language & Tone row */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.65rem" }}>
             <div className="form-group">
               <label className="form-label" style={{ display: "flex", alignItems: "center", gap: "0.3rem" }}>
-                <Languages style={{ width: "14px", height: "14px", color: "#16a34a" }} />
-                Target Language
+                <Languages style={{ width: 13, height: 13, color: "#16a34a" }} />
+                Language
               </label>
               <select
                 value={selectedLanguage}
@@ -435,7 +420,7 @@ export default function NoticeBridgeApp() {
               >
                 {AVAILABLE_LANGUAGES.map((lang) => (
                   <option key={lang.name} value={lang.name}>
-                    {lang.flag} {lang.name} ({lang.nativeName})
+                    {lang.name} ({lang.nativeName})
                   </option>
                 ))}
               </select>
@@ -449,235 +434,195 @@ export default function NoticeBridgeApp() {
                 className="form-select"
               >
                 <option value="Clear & Friendly">Clear & Friendly</option>
-                <option value="High Urgency Alert">High Urgency Alert ⚠️</option>
+                <option value="High Urgency Alert">High Urgency</option>
                 <option value="Short & Crisp">Short & Crisp</option>
-                <option value="Formal & Respectful">Formal & Respectful</option>
+                <option value="Formal & Respectful">Formal</option>
               </select>
             </div>
           </div>
 
-          {/* Transform Button */}
+          {/* Action button */}
           <button
             onClick={handleProcess}
             disabled={isLoading || !circularText.trim()}
-            className="btn-transform"
+            className="btn btn-primary btn-full"
           >
             {isLoading ? (
               <>
-                <div style={{ width: "15px", height: "15px", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "#fff", borderRadius: "50%", animation: "spin 1s linear infinite" }} />
+                <span className="spinner" />
                 <span>Processing Circular...</span>
               </>
             ) : (
               <>
-                <Send style={{ width: "15px", height: "15px" }} />
+                <Send style={{ width: 14, height: 14 }} />
                 <span>Transform into Parent Notice</span>
               </>
             )}
           </button>
         </div>
 
-        {/* Right Column: Output Hub */}
+        {/* RIGHT: Output Panel */}
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+
+          {/* Empty state */}
           {!result && !isLoading && (
-            <div
-              className="white-panel"
-              style={{
-                padding: "3rem 1.5rem",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                gap: "1rem",
-                minHeight: "440px",
-                borderStyle: "dashed",
-              }}
-            >
-              <div style={{ width: "3.5rem", height: "3.5rem", borderRadius: "50%", background: "#eff6ff", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.6rem" }}>
-                📢
-              </div>
-              <div style={{ maxWidth: "380px" }}>
-                <h3 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>
-                  No Circular Processed Yet
-                </h3>
-                <p style={{ fontSize: "0.82rem", color: "#64748b", marginTop: "0.35rem", lineHeight: 1.5 }}>
-                  Choose one of the sample templates on the left or paste your school circular, then click <strong>"Transform into Parent Notice"</strong>.
-                </p>
-              </div>
-
-              <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "0.4rem", marginTop: "0.25rem" }}>
-                <span className="badge-pill badge-slate">📱 30-Sec WhatsApp Format</span>
-                <span className="badge-pill badge-slate">🌐 Regional Translation</span>
-                <span className="badge-pill badge-slate">🔊 Voice Audio Read-Aloud</span>
-                <span className="badge-pill badge-slate">✍️ Action Checklist</span>
-              </div>
-            </div>
-          )}
-
-          {isLoading && (
-            <div
-              className="white-panel"
-              style={{
-                padding: "3rem 1.5rem",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                textAlign: "center",
-                gap: "1rem",
-                minHeight: "440px",
-              }}
-            >
-              <div style={{ width: "3.25rem", height: "3.25rem", borderRadius: "10px", background: "#eff6ff", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.5rem" }}>
-                ⚡
+            <div className="card state-panel" style={{ borderStyle: "dashed" }}>
+              <div className="state-icon">
+                <FileText style={{ width: 20, height: 20 }} />
               </div>
               <div>
-                <h3 style={{ fontSize: "1rem", fontWeight: 700, color: "#0f172a" }}>
-                  Analyzing Circular Details...
-                </h3>
-                <p style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "0.25rem" }}>
-                  Extracting dates, fees, actions, and translating to {selectedLanguage}...
+                <h3 className="state-title">No notice processed yet</h3>
+                <p className="state-body" style={{ marginTop: "0.35rem" }}>
+                  Select a template on the left or paste your own circular, then click{" "}
+                  <strong>Transform into Parent Notice</strong>.
+                </p>
+              </div>
+              <div className="feature-chips">
+                <span className="badge badge-neutral">WhatsApp Format</span>
+                <span className="badge badge-neutral">Regional Translation</span>
+                <span className="badge badge-neutral">Voice Read-Aloud</span>
+                <span className="badge badge-neutral">Action Checklist</span>
+              </div>
+            </div>
+          )}
+
+          {/* Loading state */}
+          {isLoading && (
+            <div className="card state-panel">
+              <div className="state-icon" style={{ background: "#eff6ff", borderColor: "#bfdbfe" }}>
+                <Zap style={{ width: 20, height: 20, color: "#2563eb" }} />
+              </div>
+              <div>
+                <h3 className="state-title">Analyzing circular...</h3>
+                <p className="state-body" style={{ marginTop: "0.25rem" }}>
+                  Extracting dates, fees, deadlines and translating into {selectedLanguage}.
                 </p>
               </div>
             </div>
           )}
 
+          {/* Results */}
           {result && (
-            <div className="white-panel" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              {/* Notice Metadata Header */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", paddingBottom: "0.75rem", borderBottom: "1px solid #f1f5f9" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+            <div className="card" style={{ padding: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+              {/* Result header */}
+              <div style={{ paddingBottom: "0.75rem", borderBottom: "1px solid #f1f5f9" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: "0.5rem",
+                    marginBottom: "0.5rem",
+                  }}
+                >
                   <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                    <span className={`badge-pill ${result.urgency === "High" ? "badge-rose" : result.urgency === "Medium" ? "badge-amber" : "badge-emerald"}`}>
-                      {result.urgency} Urgency
-                    </span>
-                    <span className="badge-pill badge-blue">{result.category}</span>
-                    <span className="badge-pill badge-emerald">{result.meta.readingTimeReduction}</span>
+                    <span className={`badge ${urgencyClass}`}>{result.urgency} Priority</span>
+                    <span className="badge badge-blue">{result.category}</span>
+                    <span className="badge badge-green">{result.meta.readingTimeReduction}</span>
                   </div>
-                  <span style={{ fontSize: "0.72rem", color: "#64748b" }}>
+                  <span style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
                     {result.meta.modelUsed}
                   </span>
                 </div>
-                <h2 style={{ fontSize: "1.1rem", fontWeight: 700, color: "#0f172a" }}>
-                  {result.title}
-                </h2>
+                <h2 style={{ fontSize: "1rem", fontWeight: 700, color: "#111827" }}>{result.title}</h2>
               </div>
 
-              {/* Tabs Navigation */}
+              {/* Tabs */}
               <div className="tabs-nav">
-                <button
-                  onClick={() => setActiveTab("whatsapp")}
-                  className={`tab-btn whatsapp-tab ${activeTab === "whatsapp" ? "active" : ""}`}
-                >
-                  <Share2 style={{ width: "14px", height: "14px" }} />
-                  <span>WhatsApp Broadcast</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("translation")}
-                  className={`tab-btn ${activeTab === "translation" ? "active" : ""}`}
-                >
-                  <Languages style={{ width: "14px", height: "14px" }} />
-                  <span>{result.targetLanguageName} Translation</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("facts")}
-                  className={`tab-btn ${activeTab === "facts" ? "active" : ""}`}
-                >
-                  <Calendar style={{ width: "14px", height: "14px" }} />
-                  <span>Key Facts Sheet</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("checklist")}
-                  className={`tab-btn ${activeTab === "checklist" ? "active" : ""}`}
-                >
-                  <CheckSquare style={{ width: "14px", height: "14px" }} />
-                  <span>Action Checklist ({completedCount}/{totalTasks})</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab("faqs")}
-                  className={`tab-btn ${activeTab === "faqs" ? "active" : ""}`}
-                >
-                  <HelpCircle style={{ width: "14px", height: "14px" }} />
-                  <span>Parent FAQs</span>
-                </button>
+                {[
+                  { id: "whatsapp", icon: <Share2 style={{ width: 13, height: 13 }} />, label: "WhatsApp" },
+                  {
+                    id: "translation",
+                    icon: <Languages style={{ width: 13, height: 13 }} />,
+                    label: result.targetLanguageName,
+                  },
+                  { id: "facts", icon: <Calendar style={{ width: 13, height: 13 }} />, label: "Key Facts" },
+                  {
+                    id: "checklist",
+                    icon: <CheckSquare style={{ width: 13, height: 13 }} />,
+                    label: `Checklist (${completedCount}/${totalTasks})`,
+                  },
+                  { id: "faqs", icon: <HelpCircle style={{ width: 13, height: 13 }} />, label: "FAQs" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                    className={`tab-btn ${activeTab === tab.id ? "active" : ""}`}
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </button>
+                ))}
               </div>
 
-              {/* Tab 1: WhatsApp Broadcast */}
+              {/* Tab: WhatsApp */}
               {activeTab === "whatsapp" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div className="whatsapp-bubble">
-                    {result.whatsappNotice}
-                  </div>
-
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
-                    <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                      Ready to share directly to Parent Class WhatsApp Groups
+                  <div className="message-block">{result.whatsappNotice}</div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      flexWrap: "wrap",
+                      gap: "0.5rem",
+                    }}
+                  >
+                    <span style={{ fontSize: "0.74rem", color: "#9ca3af" }}>
+                      Ready to paste into class WhatsApp groups
                     </span>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                    <div style={{ display: "flex", gap: "0.5rem" }}>
                       <button
                         onClick={() => handleCopy(result.whatsappNotice, "whatsapp")}
-                        className="icon-btn"
+                        className="btn btn-ghost"
                       >
                         {copiedKey === "whatsapp" ? (
                           <>
-                            <Check style={{ width: "14px", height: "14px", color: "#16a34a" }} />
-                            <span style={{ color: "#16a34a" }}>Copied!</span>
+                            <Check style={{ width: 13, height: 13, color: "#16a34a" }} />
+                            <span style={{ color: "#16a34a" }}>Copied</span>
                           </>
                         ) : (
                           <>
-                            <Copy style={{ width: "14px", height: "14px" }} />
-                            <span>Copy Text</span>
+                            <Copy style={{ width: 13, height: 13 }} />
+                            <span>Copy</span>
                           </>
                         )}
                       </button>
-
                       <button
                         onClick={() => handleShareWhatsApp(result.whatsappNotice)}
-                        style={{
-                          padding: "0.45rem 0.9rem",
-                          borderRadius: "8px",
-                          background: "#16a34a",
-                          color: "#ffffff",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.4rem",
-                          border: "none",
-                          cursor: "pointer",
-                        }}
+                        className="btn btn-success"
                       >
-                        <Share2 style={{ width: "14px", height: "14px" }} />
-                        <span>Send to WhatsApp</span>
+                        <Share2 style={{ width: 13, height: 13 }} />
+                        <span>Open WhatsApp</span>
                       </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {/* Tab 2: Translation & Audio */}
+              {/* Tab: Translation */}
               {activeTab === "translation" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  {/* Audio Read-Aloud */}
+                  {/* Audio bar */}
                   <div className="audio-bar">
                     <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
                       <button
                         onClick={() => handlePlaySpeech(result.translatedNotice || result.audioScript)}
-                        className={`audio-play-btn ${isSpeaking ? "playing" : ""}`}
-                        title={isSpeaking ? "Stop Audio" : "Listen Aloud"}
+                        className={`audio-play-btn ${isSpeaking ? "playing" : "idle"}`}
+                        title={isSpeaking ? "Stop" : "Listen"}
                       >
-                        {isSpeaking ? <VolumeX style={{ width: "17px", height: "17px" }} /> : <Volume2 style={{ width: "17px", height: "17px" }} />}
+                        {isSpeaking ? (
+                          <VolumeX style={{ width: 16, height: 16 }} />
+                        ) : (
+                          <Volume2 style={{ width: 16, height: 16 }} />
+                        )}
                       </button>
                       <div>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "0.82rem", fontWeight: 700, color: "#0f172a" }}>
-                          <span>Listen Aloud (Speech Synthesizer)</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span className="audio-label">Listen aloud</span>
                           {isSpeaking && (
-                            <div className="wave-container">
+                            <div className="wave">
                               <div className="wave-bar" />
                               <div className="wave-bar" />
                               <div className="wave-bar" />
@@ -685,149 +630,128 @@ export default function NoticeBridgeApp() {
                             </div>
                           )}
                         </div>
-                        <p style={{ fontSize: "0.72rem", color: "#64748b" }}>
-                          Helps non-English literate or busy parents listen to the announcement
-                        </p>
+                        <p className="audio-sub">For parents who prefer audio over reading</p>
                       </div>
                     </div>
-
                     <button
                       onClick={() => setSpeechRate((r) => (r === 1 ? 1.25 : r === 1.25 ? 0.85 : 1))}
-                      className="icon-btn"
-                      style={{ padding: "0.3rem 0.6rem", fontSize: "0.72rem" }}
+                      className="btn btn-ghost"
+                      style={{ padding: "0.25rem 0.55rem", fontSize: "0.72rem" }}
                     >
-                      {speechRate}x Speed
+                      {speechRate}x
                     </button>
                   </div>
 
-                  <div
-                    style={{
-                      background: "#ffffff",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: "8px",
-                      padding: "1.15rem",
-                      color: "#0f172a",
-                      fontSize: "0.85rem",
-                      lineHeight: 1.6,
-                      whiteSpace: "pre-wrap",
-                      userSelect: "text",
-                    }}
-                  >
-                    {result.translatedNotice}
-                  </div>
+                  <div className="translation-block">{result.translatedNotice}</div>
 
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "0.5rem" }}>
-                    <button
-                      onClick={() => handleCopy(result.translatedNotice, "translation")}
-                      className="icon-btn"
-                    >
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+                    <button onClick={() => handleCopy(result.translatedNotice, "translation")} className="btn btn-ghost">
                       {copiedKey === "translation" ? (
                         <>
-                          <Check style={{ width: "14px", height: "14px", color: "#16a34a" }} />
-                          <span style={{ color: "#16a34a" }}>Copied!</span>
+                          <Check style={{ width: 13, height: 13, color: "#16a34a" }} />
+                          <span style={{ color: "#16a34a" }}>Copied</span>
                         </>
                       ) : (
                         <>
-                          <Copy style={{ width: "14px", height: "14px" }} />
-                          <span>Copy Translation</span>
+                          <Copy style={{ width: 13, height: 13 }} />
+                          <span>Copy</span>
                         </>
                       )}
                     </button>
-
-                    <button
-                      onClick={() => handleShareWhatsApp(result.translatedNotice)}
-                      style={{
-                        padding: "0.45rem 0.9rem",
-                        borderRadius: "8px",
-                        background: "#2563eb",
-                        color: "#ffffff",
-                        fontSize: "0.8rem",
-                        fontWeight: 600,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.4rem",
-                        border: "none",
-                        cursor: "pointer",
-                      }}
-                    >
-                      <Share2 style={{ width: "14px", height: "14px" }} />
+                    <button onClick={() => handleShareWhatsApp(result.translatedNotice)} className="btn btn-success">
+                      <Share2 style={{ width: 13, height: 13 }} />
                       <span>Share in {result.targetLanguageName}</span>
                     </button>
                   </div>
                 </div>
               )}
 
-              {/* Tab 3: Key Facts */}
+              {/* Tab: Key Facts */}
               {activeTab === "facts" && (
                 <div className="facts-grid">
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#fffbeb", color: "#b45309", border: "1px solid #fde68a" }}>
-                      <Calendar style={{ width: "16px", height: "16px" }} />
+                  {[
+                    {
+                      icon: <Calendar style={{ width: 15, height: 15 }} />,
+                      label: "Event Date",
+                      value: result.keyDetails.eventDate,
+                      bg: "#fffbeb",
+                      fg: "#b45309",
+                      border: "#fde68a",
+                    },
+                    {
+                      icon: <Clock style={{ width: 15, height: 15 }} />,
+                      label: "Timings",
+                      value: result.keyDetails.timings,
+                      bg: "#eff6ff",
+                      fg: "#1d4ed8",
+                      border: "#bfdbfe",
+                    },
+                    {
+                      icon: <AlertCircle style={{ width: 15, height: 15 }} />,
+                      label: "Deadline",
+                      value: result.keyDetails.deadline,
+                      bg: "#fef2f2",
+                      fg: "#dc2626",
+                      border: "#fecaca",
+                      valueColor: "#dc2626",
+                    },
+                    {
+                      icon: <DollarSign style={{ width: 15, height: 15 }} />,
+                      label: "Fees / Amount",
+                      value: result.keyDetails.feeOrAmount,
+                      bg: "#f0fdf4",
+                      fg: "#15803d",
+                      border: "#bbf7d0",
+                    },
+                    {
+                      icon: <Shirt style={{ width: 15, height: 15 }} />,
+                      label: "Dress Code",
+                      value: result.keyDetails.dressCode,
+                      bg: "#faf5ff",
+                      fg: "#7e22ce",
+                      border: "#e9d5ff",
+                    },
+                    {
+                      icon: <Phone style={{ width: 15, height: 15 }} />,
+                      label: "Contact",
+                      value: result.keyDetails.contactPerson,
+                      bg: "#ecfeff",
+                      fg: "#0e7490",
+                      border: "#a5f3fc",
+                    },
+                  ].map((f, i) => (
+                    <div className="fact-row" key={i}>
+                      <div
+                        className="fact-icon"
+                        style={{ background: f.bg, color: f.fg, border: `1px solid ${f.border}` }}
+                      >
+                        {f.icon}
+                      </div>
+                      <div>
+                        <div className="fact-label">{f.label}</div>
+                        <div className="fact-value" style={f.valueColor ? { color: f.valueColor } : {}}>
+                          {f.value}
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="fact-label">Event Date</div>
-                      <div className="fact-value">{result.keyDetails.eventDate}</div>
-                    </div>
-                  </div>
-
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#eff6ff", color: "#1d4ed8", border: "1px solid #bfdbfe" }}>
-                      <Clock style={{ width: "16px", height: "16px" }} />
-                    </div>
-                    <div>
-                      <div className="fact-label">Timings</div>
-                      <div className="fact-value">{result.keyDetails.timings}</div>
-                    </div>
-                  </div>
-
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#fff1f2", color: "#be123c", border: "1px solid #fecdd3" }}>
-                      <AlertCircle style={{ width: "16px", height: "16px" }} />
-                    </div>
-                    <div>
-                      <div className="fact-label">Strict Deadline</div>
-                      <div className="fact-value" style={{ color: "#be123c" }}>{result.keyDetails.deadline}</div>
-                    </div>
-                  </div>
-
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#f0fdf4", color: "#15803d", border: "1px solid #bbf7d0" }}>
-                      <DollarSign style={{ width: "16px", height: "16px" }} />
-                    </div>
-                    <div>
-                      <div className="fact-label">Fees / Amount</div>
-                      <div className="fact-value">{result.keyDetails.feeOrAmount}</div>
-                    </div>
-                  </div>
-
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#faf5ff", color: "#7e22ce", border: "1px solid #e9d5ff" }}>
-                      <Shirt style={{ width: "16px", height: "16px" }} />
-                    </div>
-                    <div>
-                      <div className="fact-label">Dress Code / Kit</div>
-                      <div className="fact-value">{result.keyDetails.dressCode}</div>
-                    </div>
-                  </div>
-
-                  <div className="fact-card">
-                    <div className="fact-icon-box" style={{ background: "#ecfeff", color: "#0e7490", border: "1px solid #a5f3fc" }}>
-                      <Phone style={{ width: "16px", height: "16px" }} />
-                    </div>
-                    <div>
-                      <div className="fact-label">Contact / Helpline</div>
-                      <div className="fact-value">{result.keyDetails.contactPerson}</div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               )}
 
-              {/* Tab 4: Parent Action Checklist */}
+              {/* Tab: Checklist */}
               {activeTab === "checklist" && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", fontSize: "0.78rem", color: "#64748b" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      fontSize: "0.78rem",
+                      color: "#6b7280",
+                    }}
+                  >
                     <span>
-                      Readiness Status: <strong style={{ color: "#0f172a" }}>{completedCount} of {totalTasks}</strong> completed
+                      {completedCount} of {totalTasks} completed
                     </span>
                     <button
                       onClick={() =>
@@ -838,44 +762,53 @@ export default function NoticeBridgeApp() {
                           "checklist"
                         )
                       }
-                      style={{ background: "none", border: "none", color: "#2563eb", fontSize: "0.75rem", cursor: "pointer", display: "flex", alignItems: "center", gap: "0.25rem", fontWeight: 600 }}
+                      className="btn btn-ghost"
+                      style={{ padding: "0.2rem 0.5rem", fontSize: "0.72rem" }}
                     >
-                      {copiedKey === "checklist" ? <Check style={{ width: "12px", height: "12px", color: "#16a34a" }} /> : <Copy style={{ width: "12px", height: "12px" }} />}
-                      <span>Copy Checklist</span>
+                      {copiedKey === "checklist" ? (
+                        <Check style={{ width: 12, height: 12, color: "#16a34a" }} />
+                      ) : (
+                        <Copy style={{ width: 12, height: 12 }} />
+                      )}
+                      <span>Copy list</span>
                     </button>
                   </div>
 
-                  <div className="checklist-container">
+                  {/* Progress */}
+                  <div className="progress-bar-wrap">
+                    <div
+                      className="progress-bar-fill"
+                      style={{ width: totalTasks ? `${(completedCount / totalTasks) * 100}%` : "0%" }}
+                    />
+                  </div>
+
+                  <div className="checklist-items">
                     {result.actionChecklist.map((item) => {
-                      const isDone = !!checkedTasks[item.id];
+                      const done = !!checkedTasks[item.id];
                       return (
                         <div
                           key={item.id}
                           onClick={() => toggleTask(item.id)}
-                          className={`checklist-item ${isDone ? "done" : ""}`}
+                          className={`checklist-row ${done ? "done" : ""}`}
                         >
-                          <div style={{ marginTop: "2px" }}>
-                            {isDone ? (
-                              <CheckSquare style={{ width: "16px", height: "16px", color: "#16a34a" }} />
+                          <div style={{ marginTop: 2, flexShrink: 0 }}>
+                            {done ? (
+                              <CheckSquare style={{ width: 15, height: 15, color: "#16a34a" }} />
                             ) : (
-                              <Square style={{ width: "16px", height: "16px", color: "#94a3b8" }} />
+                              <Square style={{ width: 15, height: 15, color: "#9ca3af" }} />
                             )}
                           </div>
-                          <div style={{ flex: 1, fontSize: "0.82rem" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
-                              <span style={{ color: isDone ? "#94a3b8" : "#0f172a", fontWeight: isDone ? 400 : 500 }}>
-                                {item.task}
-                              </span>
-                              {item.important && !isDone && (
-                                <span className="badge-pill badge-rose" style={{ fontSize: "0.65rem", padding: "0.15rem 0.45rem" }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", flexWrap: "wrap" }}>
+                              <span className="cl-task">{item.task}</span>
+                              {item.important && !done && (
+                                <span className="badge badge-red" style={{ fontSize: "0.63rem", padding: "1px 6px" }}>
                                   Required
                                 </span>
                               )}
                             </div>
                             {item.deadline && (
-                              <span style={{ fontSize: "0.72rem", color: "#64748b", display: "block", marginTop: "2px" }}>
-                                Due: {item.deadline}
-                              </span>
+                              <span className="cl-due">Due: {item.deadline}</span>
                             )}
                           </div>
                         </div>
@@ -885,32 +818,19 @@ export default function NoticeBridgeApp() {
                 </div>
               )}
 
-              {/* Tab 5: FAQs */}
+              {/* Tab: FAQs */}
               {activeTab === "faqs" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
-                  <div style={{ fontSize: "0.75rem", color: "#64748b" }}>
-                    Frequently asked questions by parents:
-                  </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem" }}>
+                  <p style={{ fontSize: "0.74rem", color: "#9ca3af", marginBottom: "0.1rem" }}>
+                    Common questions parents typically ask in class groups:
+                  </p>
                   {result.frequentlyAskedQuestions.map((faq, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        padding: "0.85rem 1rem",
-                        borderRadius: "8px",
-                        background: "#ffffff",
-                        border: "1px solid #e2e8f0",
-                        display: "flex",
-                        flexDirection: "column",
-                        gap: "0.35rem",
-                      }}
-                    >
-                      <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1d4ed8", display: "flex", gap: "0.4rem" }}>
-                        <span>Q:</span>
+                    <div key={idx} className="faq-item">
+                      <div className="faq-q">
+                        <span className="faq-q-marker">Q</span>
                         <span>{faq.question}</span>
                       </div>
-                      <div style={{ fontSize: "0.78rem", color: "#334155", paddingLeft: "1.1rem", lineHeight: 1.5 }}>
-                        {faq.answer}
-                      </div>
+                      <div className="faq-a">{faq.answer}</div>
                     </div>
                   ))}
                 </div>
@@ -920,40 +840,46 @@ export default function NoticeBridgeApp() {
         </div>
       </div>
 
-      {/* API Key Modal */}
+      {/* Settings Modal */}
       {showSettingsModal && (
         <div className="modal-overlay" onClick={() => setShowSettingsModal(false)}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "1px solid #e2e8f0", paddingBottom: "0.5rem" }}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                <Settings style={{ width: "16px", height: "16px", color: "#2563eb" }} />
-                <h3 style={{ fontSize: "0.95rem", fontWeight: 700, color: "#0f172a" }}>
-                  API Key Configuration
-                </h3>
+                <Settings style={{ width: 15, height: 15, color: "#2563eb" }} />
+                <span className="modal-title">API Key Settings</span>
               </div>
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                style={{ background: "none", border: "none", color: "#64748b", cursor: "pointer", fontSize: "1rem" }}
-              >
-                ✕
+              <button className="modal-close" onClick={() => setShowSettingsModal(false)}>
+                <X style={{ width: 16, height: 16 }} />
               </button>
             </div>
 
-            <p style={{ fontSize: "0.8rem", color: "#475569", lineHeight: 1.5 }}>
-              NoticeBridge includes a built-in Smart Heuristic engine for offline/demo use. To enable Google Gemini AI analysis and live multilingual translations:
+            <p style={{ fontSize: "0.8rem", color: "#6b7280", lineHeight: 1.55 }}>
+              NoticeBridge includes a built-in engine for offline and demo use. To enable live Gemini AI analysis and real multilingual translation, add an API key below.
             </p>
 
-            <div style={{ padding: "0.75rem", borderRadius: "8px", background: "#eff6ff", border: "1px solid #bfdbfe", fontSize: "0.75rem", color: "#1e40af" }}>
+            <div className="info-box">
               <strong>For Vercel Deployment:</strong>
-              <div style={{ marginTop: "0.25rem", color: "#334155" }}>
-                Add <code style={{ background: "#ffffff", padding: "2px 5px", borderRadius: "4px", color: "#b45309", border: "1px solid #cbd5e1" }}>GEMINI_API_KEY</code> under <strong>Settings &gt; Environment Variables</strong> in your Vercel project.
+              <div style={{ marginTop: "0.25rem", color: "#374151" }}>
+                Add{" "}
+                <code
+                  style={{
+                    background: "#fff",
+                    padding: "1px 5px",
+                    borderRadius: 4,
+                    color: "#b45309",
+                    border: "1px solid #e2e8f0",
+                    fontFamily: "monospace",
+                  }}
+                >
+                  GEMINI_API_KEY
+                </code>{" "}
+                under <strong>Settings &gt; Environment Variables</strong> in your Vercel project.
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label">
-                Optional: Enter Gemini API Key for local browser testing
-              </label>
+              <label className="form-label">Gemini API Key (optional — for local use)</label>
               <input
                 type="password"
                 value={customApiKey}
@@ -962,31 +888,20 @@ export default function NoticeBridgeApp() {
                 className="form-input"
                 style={{ fontFamily: "monospace" }}
               />
-              <span style={{ fontSize: "0.7rem", color: "#64748b", marginTop: "2px" }}>
-                Saved in your browser's localStorage. Free key available at aistudio.google.com.
+              <span style={{ fontSize: "0.7rem", color: "#9ca3af" }}>
+                Stored in browser localStorage only. Free key at{" "}
+                <a href="https://aistudio.google.com/" target="_blank" rel="noreferrer" style={{ color: "#2563eb" }}>
+                  aistudio.google.com
+                </a>
+                .
               </span>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem", marginTop: "0.5rem" }}>
-              <button
-                onClick={() => setShowSettingsModal(false)}
-                className="icon-btn"
-              >
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.5rem" }}>
+              <button onClick={() => setShowSettingsModal(false)} className="btn btn-ghost">
                 Cancel
               </button>
-              <button
-                onClick={() => handleSaveApiKey(customApiKey)}
-                style={{
-                  padding: "0.45rem 0.9rem",
-                  borderRadius: "8px",
-                  background: "#2563eb",
-                  color: "#ffffff",
-                  fontSize: "0.8rem",
-                  fontWeight: 600,
-                  border: "none",
-                  cursor: "pointer",
-                }}
-              >
+              <button onClick={() => handleSaveApiKey(customApiKey)} className="btn btn-primary">
                 Save Key
               </button>
             </div>
@@ -996,19 +911,17 @@ export default function NoticeBridgeApp() {
 
       {/* Footer */}
       <footer className="app-footer">
-        <div>
-          NoticeBridge • School Circular & Parent Communication Engine
-        </div>
+        <span>NoticeBridge — School Circular Communication Engine</span>
         <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
           <span>Deployable on Vercel</span>
-          <span>•</span>
+          <span>·</span>
           <a
             href="https://github.com/srhagul30/School-project-.git"
             target="_blank"
             rel="noopener noreferrer"
             style={{ color: "#2563eb", textDecoration: "none", fontWeight: 500 }}
           >
-            GitHub Repository
+            GitHub
           </a>
         </div>
       </footer>
