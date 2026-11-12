@@ -1,28 +1,31 @@
 {
   "name": "noticebridge",
   "version": "0.1.0",
-  "description": "School Circular to 30-Second WhatsApp & Multilingual Parent Notice Engine",
+  "description": "Turn school circulars into WhatsApp messages, translations, key dates and parent checklists.",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.4",
-    "lucide-react": "^1.60.0",
-    "next": "16.4.2",
+    "lucide-react": "^1.72.0",
+    "next": "16.4.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "unpdf": "^2.1.0"
   },
   "devDependencies": {
-    "@types/canvas-confetti": "^1.9.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.4.2",
+    "eslint-config-next": "16.4.6",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9"
   }
 }
