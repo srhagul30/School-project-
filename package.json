@@ -4,23 +4,26 @@
   "description": "Turn school circulars into WhatsApp messages, translations, key dates and parent checklists.",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -k -n web,api -c green,blue \"next dev\" \"npm:dev:api\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently -k -n web,api -c green,blue \"next start\" \"python -m uvicorn api.index:app --port 8000\"",
     "lint": "eslint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "dev:api": "python -m uvicorn api.index:app --reload --port 8000 --reload-dir api",
+    "setup:api": "python -m pip install -r requirements.txt",
+    "demo-pdfs": "python scripts/make_demo_pdfs.py"
   },
   "dependencies": {
     "lucide-react": "^1.72.0",
     "next": "16.4.6",
     "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "unpdf": "^2.1.0"
+    "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^10.0.7",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
     "typescript": "^5"

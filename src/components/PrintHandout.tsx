@@ -5,9 +5,11 @@ import { plainText } from "@/lib/whatsapp-format";
 export function PrintHandout({
   result: r,
   schoolName,
+  message,
 }: {
   result: NoticeResult;
   schoolName: string;
+  message: string;
 }) {
   const rows: [string, string][] = [
     ["Date", r.keyDetails.eventDate],
@@ -35,16 +37,8 @@ export function PrintHandout({
           ))}
         </tbody>
       </table>
-      <h2>To do</h2>
-      <ul className="handout-list">
-        {r.actionChecklist.map((a) => (
-          <li key={a.id}>
-            <span className="box" />
-            {a.task}
-            {a.deadline ? ` — ${/^within/i.test(a.deadline) ? a.deadline : `by ${a.deadline}`}` : ""}
-          </li>
-        ))}
-      </ul>
+      <h2>Message to parents</h2>
+      <p className="handout-message">{plainText(message)}</p>
       {r.targetLanguage !== "Simple English" && (
         <>
           <h2>{r.targetLanguage}</h2>

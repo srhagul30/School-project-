@@ -20,16 +20,11 @@ export interface KeyDetails {
   contactPerson: string;
 }
 
-export interface ChecklistItem {
-  id: string;
-  task: string;
-  deadline?: string;
-  important: boolean;
-}
-
-export interface Faq {
-  question: string;
-  answer: string;
+/** A fact found in the circular, as UTF-16 offsets into the processed text. */
+export interface FactSpan {
+  start: number;
+  end: number;
+  kind: "date" | "time" | "money" | "contact";
 }
 
 /** Machine-readable event timing, used for the "Add to calendar" export. */
@@ -53,8 +48,7 @@ export interface NoticeResult {
   targetLanguage: string;
   keyDetails: KeyDetails;
   calendar: CalendarHint;
-  actionChecklist: ChecklistItem[];
-  faqs: Faq[];
+  spans: FactSpan[];
   meta: {
     engine: "gemini" | "offline";
     model: string;
@@ -65,16 +59,9 @@ export interface NoticeResult {
     /** Seconds to read the WhatsApp message, at 200 wpm. */
     summaryReadSeconds: number;
     /** Set when the offline engine could only partially translate. */
-    translationNote?: string;
+    translationNote?: string | null;
     /** Set when Gemini was requested but failed and we fell back. */
     fallbackReason?: string;
   };
 }
 
-export interface ProcessRequest {
-  circularText: string;
-  schoolName: string;
-  targetLanguage: string;
-  tone: Tone;
-  useEmoji: boolean;
-}

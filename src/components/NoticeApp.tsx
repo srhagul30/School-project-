@@ -12,6 +12,7 @@ import { SAMPLES } from "@/lib/samples";
 import {
   HISTORY_LIMIT,
   KEYS,
+  isCurrentResult,
   load,
   save,
   type Draft,
@@ -35,6 +36,8 @@ export function NoticeApp() {
   const [result, setResult] = useState<NoticeResult | null>(null);
   const [resultId, setResultId] = useState<string>("");
   const [resultSchool, setResultSchool] = useState("");
+  // The exact text the current result was made from; fact highlights only apply to it.
+  const [processedText, setProcessedText] = useState("");
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { toast, showToast } = useToast();
@@ -46,11 +49,11 @@ export function NoticeApp() {
     const restore = () => {
       setSettings({ ...DEFAULT_SETTINGS, ...load<Partial<Settings>>(KEYS.settings, {}) });
       setDraft(load<Draft>(KEYS.draft, DEFAULT_DRAFT));
-      setHistory(load<HistoryEntry[]>(KEYS.history, []));
+      setHistory(load<HistoryEntry[]>(KEYS.history, []).filter((h) => isCurrentResult(h.result)));
       setHydrated(true);
     };
     restore();
-    fetch("/api/status")
+    fetch("/api/py/status")
       .then((r) => r.json())
       .then((d) => setServerAi(Boolean(d.serverAi)))
       .catch(() => setServerAi(false));
@@ -82,7 +85,7 @@ export function NoticeApp() {
     setError(null);
 
     try {
-      const res = await fetch("/api/process-notice", {
+      const res = await fetch("/api/py/process-notice", {
         method: "POST",
         signal: controller.signal,
         headers: {
@@ -98,13 +101,19 @@ export function NoticeApp() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || `The server returned an error (${res.status}).`);
+      if (!res.ok) {
+        const msg = data.error || (typeof data.detail === "string" ? data.detail : "");
+        throw new Error(
+          msg || (res.status >= 500 ? "The Python API isn't responding. If you're running locally, start it with npm run dev." : `The server returned an error (${res.status}).`)
+        );
+      }
 
       const r = data as NoticeResult;
       const id = `${Date.now()}`;
       setResult(r);
       setResultId(id);
       setResultSchool(draft.schoolName || "School");
+      setProcessedText(text);
 
       const entry: HistoryEntry = {
         id,
@@ -152,6 +161,7 @@ export function NoticeApp() {
     setResult(h.result);
     setResultId(h.id);
     setResultSchool(h.schoolName || "School");
+    setProcessedText(h.circularText);
     setError(null);
   };
 
@@ -202,7 +212,8 @@ export function NoticeApp() {
             error={error}
             onGenerate={generate}
             onError={setError}
-            showMarks={Boolean(result) && !loading}
+            marks={result && !loading && draft.circularText.trim() === processedText ? result.spans : null}
+            hasResult={Boolean(result)}
           />
           <div ref={resultRef} className="result-column">
             <ResultPanel

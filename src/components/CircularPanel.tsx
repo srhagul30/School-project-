@@ -1,11 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, type DragEvent } from "react";
-import { FileUp, Loader2 } from "lucide-react";
-import { SAMPLES } from "@/lib/samples";
+import { Download, FileText, FileUp, Loader2 } from "lucide-react";
+import { SAMPLES, type SampleCircular } from "@/lib/samples";
 import { LANGUAGES } from "@/lib/languages";
-import { findSpans, wordCount, type SpanKind } from "@/lib/extract";
 import type { Draft, Settings } from "@/lib/storage";
+import type { FactSpan } from "@/lib/types";
 
 const TONES: { value: Settings["tone"]; label: string }[] = [
   { value: "friendly", label: "Friendly" },
@@ -14,12 +14,14 @@ const TONES: { value: Settings["tone"]; label: string }[] = [
   { value: "urgent", label: "Urgent" },
 ];
 
-const KIND_LABEL: Record<SpanKind, string> = {
+const KIND_LABEL: Record<FactSpan["kind"], string> = {
   date: "Dates",
   time: "Times",
   money: "Amounts",
   contact: "Contacts",
 };
+
+const wordCount = (t: string) => t.trim().split(/\s+/).filter(Boolean).length;
 
 interface Props {
   draft: Draft;
@@ -30,7 +32,9 @@ interface Props {
   error: string | null;
   onGenerate: () => void;
   onError: (msg: string | null) => void;
-  showMarks: boolean;
+  /** Fact spans from the Python API, or null when the text no longer matches the result. */
+  marks: FactSpan[] | null;
+  hasResult: boolean;
 }
 
 export function CircularPanel({
@@ -42,11 +46,12 @@ export function CircularPanel({
   error,
   onGenerate,
   onError,
-  showMarks,
+  marks,
+  hasResult,
 }: Props) {
   const [view, setView] = useState<"edit" | "marked">("edit");
   const [dragging, setDragging] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const textRef = useRef<HTMLTextAreaElement>(null);
   const [isMac, setIsMac] = useState(false);
@@ -56,49 +61,65 @@ export function CircularPanel({
     detect();
   }, []);
 
-  // Show the marked-up circular as soon as the first result arrives.
-  const [prevShowMarks, setPrevShowMarks] = useState(showMarks);
-  if (showMarks !== prevShowMarks) {
-    setPrevShowMarks(showMarks);
-    if (showMarks) setView("marked");
+  // Switch to the marked-up circular whenever a fresh set of marks arrives.
+  const [prevMarks, setPrevMarks] = useState(marks);
+  if (marks !== prevMarks) {
+    setPrevMarks(marks);
+    setView(marks ? "marked" : "edit");
   }
 
   const words = wordCount(draft.circularText);
-  const spans = useMemo(() => findSpans(draft.circularText), [draft.circularText]);
   const counts = useMemo(() => {
-    const c: Partial<Record<SpanKind, number>> = {};
-    for (const s of spans) c[s.kind] = (c[s.kind] ?? 0) + 1;
+    const c: Partial<Record<FactSpan["kind"], number>> = {};
+    for (const s of marks ?? []) c[s.kind] = (c[s.kind] ?? 0) + 1;
     return c;
-  }, [spans]);
+  }, [marks]);
 
   const activeSample = SAMPLES.find((s) => s.text === draft.circularText)?.id;
 
-  async function readFile(file: File) {
+  async function uploadPdf(file: File, schoolName?: string) {
     onError(null);
+    setUploading(file.name);
+    try {
+      const form = new FormData();
+      form.append("file", file);
+      const res = await fetch("/api/py/extract-text", { method: "POST", body: form });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Couldn't read that PDF.");
+      onDraftChange({ schoolName: schoolName ?? draft.schoolName, circularText: data.text });
+      setView("edit");
+    } catch (e) {
+      onError((e as Error).message);
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  async function readFile(file: File) {
     if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
-      setUploading(true);
-      try {
-        const form = new FormData();
-        form.append("file", file);
-        const res = await fetch("/api/extract-text", { method: "POST", body: form });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok) throw new Error(data.error || "Couldn't read that PDF.");
-        onDraftChange({ ...draft, circularText: data.text });
-        setView("edit");
-      } catch (e) {
-        onError((e as Error).message);
-      } finally {
-        setUploading(false);
-      }
-      return;
+      return uploadPdf(file);
     }
     if (file.type.startsWith("text/") || /\.(txt|md)$/i.test(file.name)) {
-      const text = await file.text();
-      onDraftChange({ ...draft, circularText: text });
+      onError(null);
+      onDraftChange({ ...draft, circularText: await file.text() });
       setView("edit");
       return;
     }
     onError("Upload a PDF or a .txt file. For Word documents, copy the text and paste it here.");
+  }
+
+  /** Sends a demo PDF through the same upload path a real PDF takes. */
+  async function loadDemoPdf(s: SampleCircular) {
+    try {
+      const blob = await fetch(`/demo/${s.file}`).then((r) => {
+        if (!r.ok) throw new Error();
+        return r.blob();
+      });
+      onSettingsChange({ language: s.language });
+      await uploadPdf(new File([blob], s.file, { type: "application/pdf" }), s.schoolName);
+    } catch {
+      onError("Couldn't load that demo PDF.");
+    }
   }
 
   function onDrop(e: DragEvent) {
@@ -107,6 +128,8 @@ export function CircularPanel({
     const file = e.dataTransfer.files?.[0];
     if (file) readFile(file);
   }
+
+  const showMarked = view === "marked" && marks;
 
   return (
     <div className="panel panel-input">
@@ -117,7 +140,7 @@ export function CircularPanel({
             type="button"
             className="btn btn-quiet btn-sm"
             onClick={() => fileRef.current?.click()}
-            disabled={uploading}
+            disabled={Boolean(uploading)}
           >
             {uploading ? <Loader2 size={15} className="spin" aria-hidden /> : <FileUp size={15} aria-hidden />}
             {uploading ? "Reading PDF…" : "Upload PDF"}
@@ -156,6 +179,40 @@ export function CircularPanel({
         ))}
       </div>
 
+      <details className="demo-pdfs">
+        <summary>
+          <FileText size={15} aria-hidden />
+          Demo PDFs from a Salem school
+          <span className="demo-count">{SAMPLES.length}</span>
+        </summary>
+        <p className="demo-intro">
+          Real-looking circulars from a fictional matriculation school in Fairlands, Salem. Upload one to see the PDF
+          reader at work, or download them to use in a presentation.
+        </p>
+        <ul>
+          {SAMPLES.map((s) => (
+            <li key={s.id}>
+              <span className="demo-name">{s.label}</span>
+              <span className="demo-actions">
+                <button
+                  type="button"
+                  className="btn btn-quiet btn-sm"
+                  onClick={() => loadDemoPdf(s)}
+                  disabled={Boolean(uploading)}
+                >
+                  {uploading === s.file ? <Loader2 size={14} className="spin" aria-hidden /> : <FileUp size={14} aria-hidden />}
+                  Upload
+                </button>
+                <a className="btn btn-quiet btn-sm" href={`/demo/${s.file}`} download>
+                  <Download size={14} aria-hidden />
+                  <span className="sr-only">Download {s.label} PDF</span>
+                </a>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </details>
+
       <label className="field">
         <span className="field-label">School name</span>
         <input
@@ -169,9 +226,17 @@ export function CircularPanel({
 
       <div className="sheet-wrap">
         <div className="sheet-bar">
-          {showMarks ? (
+          {marks ? (
             <div className="segmented" role="tablist" aria-label="Circular view">
-              <button role="tab" type="button" aria-selected={view === "edit"} onClick={() => { setView("edit"); requestAnimationFrame(() => textRef.current?.focus()); }}>
+              <button
+                role="tab"
+                type="button"
+                aria-selected={view === "edit"}
+                onClick={() => {
+                  setView("edit");
+                  requestAnimationFrame(() => textRef.current?.focus());
+                }}
+              >
                 Edit text
               </button>
               <button role="tab" type="button" aria-selected={view === "marked"} onClick={() => setView("marked")}>
@@ -179,7 +244,9 @@ export function CircularPanel({
               </button>
             </div>
           ) : (
-            <span className="sheet-hint">Paste the text, or drop a PDF here.</span>
+            <span className="sheet-hint">
+              {hasResult ? "Text changed. Write the message again to refresh the marked facts." : "Paste the text, or drop a PDF here."}
+            </span>
           )}
           <span className="sheet-count">
             {words.toLocaleString()} {words === 1 ? "word" : "words"}
@@ -196,15 +263,15 @@ export function CircularPanel({
           onDragLeave={() => setDragging(false)}
           onDrop={onDrop}
         >
-          {view === "marked" && showMarks ? (
-            <MarkedText text={draft.circularText} spans={spans} />
+          {showMarked ? (
+            <MarkedText text={draft.circularText.trim()} spans={marks} />
           ) : (
             <textarea
               ref={textRef}
               className="sheet-text"
               value={draft.circularText}
               onChange={(e) => onDraftChange({ ...draft, circularText: e.target.value })}
-              placeholder={"Paste the full circular here, including the subject line and any numbered instructions."}
+              placeholder="Paste the full circular here, including the subject line and any numbered instructions."
               spellCheck={false}
               aria-label="Circular text"
             />
@@ -212,9 +279,9 @@ export function CircularPanel({
           {dragging && <div className="drop-hint">Drop a PDF or text file</div>}
         </div>
 
-        {view === "marked" && showMarks && (
+        {showMarked && (
           <div className="legend" aria-label="Highlight legend">
-            {(Object.keys(KIND_LABEL) as SpanKind[]).map((k) => (
+            {(Object.keys(KIND_LABEL) as FactSpan["kind"][]).map((k) => (
               <span key={k} className={`legend-item mark-${k}`}>
                 <i aria-hidden="true" />
                 {KIND_LABEL[k]} <b>{counts[k] ?? 0}</b>
@@ -274,7 +341,12 @@ export function CircularPanel({
       )}
 
       <div className="generate-row">
-        <button type="button" className="btn btn-primary btn-lg" onClick={onGenerate} disabled={loading || uploading}>
+        <button
+          type="button"
+          className="btn btn-primary btn-lg"
+          onClick={onGenerate}
+          disabled={loading || Boolean(uploading)}
+        >
           {loading ? (
             <>
               <Loader2 size={18} className="spin" aria-hidden /> Writing the message…
@@ -291,10 +363,11 @@ export function CircularPanel({
   );
 }
 
-function MarkedText({ text, spans }: { text: string; spans: ReturnType<typeof findSpans> }) {
+function MarkedText({ text, spans }: { text: string; spans: FactSpan[] }) {
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   spans.forEach((s, i) => {
+    if (s.start < cursor || s.end > text.length) return;
     if (s.start > cursor) parts.push(text.slice(cursor, s.start));
     parts.push(
       <mark key={i} className={`mark-${s.kind}`}>

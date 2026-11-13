@@ -46,4 +46,9 @@ export interface HistoryEntry {
   result: NoticeResult;
 }
 
+/** Old entries saved before the move to the Python API lack fields the UI now needs. */
+export function isCurrentResult(r: Partial<NoticeResult> | undefined): r is NoticeResult {
+  return Boolean(r && Array.isArray(r.spans) && r.meta && typeof r.meta.originalReadSeconds === "number");
+}
+
 export const HISTORY_LIMIT = 12;

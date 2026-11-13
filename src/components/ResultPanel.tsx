@@ -1,26 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import {
-  CalendarPlus,
-  Check,
-  Copy,
-  Pencil,
-  Printer,
-  Send,
-  Square,
-  SquareCheck,
-  Volume2,
-  VolumeOff,
-} from "lucide-react";
+import { CalendarPlus, Check, Copy, Loader2, Pencil, Printer, Send, Volume2, VolumeOff } from "lucide-react";
 import { WhatsAppText, plainText } from "@/lib/whatsapp-format";
-import { buildIcs, canExportCalendar, downloadFile, slug } from "@/lib/ics";
 import { findLanguage } from "@/lib/languages";
 import type { NoticeResult } from "@/lib/types";
 import { useSpeech } from "./useSpeech";
 import { PrintHandout } from "./PrintHandout";
 
-type TabId = "whatsapp" | "translation" | "sms" | "details" | "checklist" | "faqs";
+type TabId = "whatsapp" | "translation" | "sms" | "details";
 
 interface Props {
   result: NoticeResult | null;
@@ -55,7 +43,7 @@ function EmptyState() {
       </div>
       <p className="empty-copy">
         Choose a sample or paste a circular, then select <strong>Write parent message</strong>. You&rsquo;ll get the
-        WhatsApp message, a translated version, an SMS, the key facts and a checklist for parents.
+        WhatsApp message, a translated version, an SMS and the key facts, with a calendar file for the event.
       </p>
     </div>
   );
@@ -96,7 +84,6 @@ function Result({
 }) {
   const [tab, setTab] = useState<TabId>("whatsapp");
   const [texts, setTexts] = useState({ whatsapp: r.whatsappNotice, translation: r.translatedNotice, sms: r.smsNotice });
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
   const lang = findLanguage(r.targetLanguage);
   const isTranslated = r.targetLanguage !== "Simple English";
 
@@ -105,12 +92,9 @@ function Result({
     ...(isTranslated ? [{ id: "translation" as TabId, label: lang.native }] : []),
     { id: "sms", label: "SMS" },
     { id: "details", label: "Key facts" },
-    { id: "checklist", label: "Checklist" },
-    { id: "faqs", label: "Parent questions" },
   ];
 
   const urgencyClass = r.urgency === "High" ? "tag-high" : r.urgency === "Medium" ? "tag-medium" : "tag-low";
-  const doneCount = r.actionChecklist.filter((a) => checked[a.id]).length;
 
   return (
     <div className={`panel panel-output ${loading ? "is-refreshing" : ""}`}>
@@ -149,11 +133,6 @@ function Result({
             onClick={() => setTab(t.id)}
           >
             {t.label}
-            {t.id === "checklist" && (
-              <span className="tab-count">
-                {doneCount}/{r.actionChecklist.length}
-              </span>
-            )}
           </button>
         ))}
       </div>
@@ -176,7 +155,7 @@ function Result({
             original={r.translatedNotice}
             speech={{ text: plainText(texts.translation), lang: lang.speech, fallback: r.audioScript }}
             rtl={lang.rtl}
-            note={r.meta.translationNote}
+            note={r.meta.translationNote ?? undefined}
             onToast={onToast}
             channel="whatsapp"
           />
@@ -191,24 +170,6 @@ function Result({
           />
         )}
         {tab === "details" && <Details result={r} schoolName={schoolName} onToast={onToast} />}
-        {tab === "checklist" && (
-          <Checklist
-            result={r}
-            checked={checked}
-            onToggle={(id) => setChecked((c) => ({ ...c, [id]: !c[id] }))}
-            onToast={onToast}
-          />
-        )}
-        {tab === "faqs" && (
-          <dl className="faqs">
-            {r.faqs.map((f, i) => (
-              <div key={i} className="faq">
-                <dt>{f.question}</dt>
-                <dd>{f.answer}</dd>
-              </div>
-            ))}
-          </dl>
-        )}
       </div>
 
       {r.meta.fallbackReason && (
@@ -217,7 +178,7 @@ function Result({
         </p>
       )}
 
-      <PrintHandout result={r} schoolName={schoolName} />
+      <PrintHandout result={r} schoolName={schoolName} message={texts.whatsapp} />
     </div>
   );
 }
@@ -375,8 +336,39 @@ const FACT_ROWS: { key: keyof NoticeResult["keyDetails"]; label: string }[] = [
 
 const isEmpty = (v: string) => /^(not mentioned|none mentioned|n\/a|nil|none)$/i.test(v.trim());
 
+function slug(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "notice";
+}
+
 function Details({ result: r, schoolName, onToast }: { result: NoticeResult; schoolName: string; onToast: (m: string) => void }) {
-  const canCal = canExportCalendar(r);
+  const canCal = /^\d{4}-\d{2}-\d{2}$/.test(r.calendar.date);
+  const [busy, setBusy] = useState(false);
+
+  /** The .ics file is built by the Python API. */
+  const addToCalendar = async () => {
+    setBusy(true);
+    try {
+      const res = await fetch("/api/py/calendar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: r.title, schoolName, calendar: r.calendar, keyDetails: r.keyDetails }),
+      });
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Couldn't create the calendar file.");
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${slug(r.title)}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      onToast("Calendar file downloaded. Open it to add the event.");
+    } catch (e) {
+      onToast((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
   return (
     <div className="details">
       <dl className="facts">
@@ -394,87 +386,16 @@ function Details({ result: r, schoolName, onToast }: { result: NoticeResult; sch
         <button
           type="button"
           className="btn btn-quiet btn-sm"
-          disabled={!canCal}
+          disabled={!canCal || busy}
           title={canCal ? "Download an .ics file for Google Calendar, Outlook or Apple Calendar" : "No single event date was found"}
-          onClick={() => {
-            downloadFile(`${slug(r.title)}.ics`, buildIcs(r, schoolName), "text/calendar;charset=utf-8");
-            onToast("Calendar file downloaded. Open it to add the event.");
-          }}
+          onClick={addToCalendar}
         >
-          <CalendarPlus size={15} aria-hidden />
+          {busy ? <Loader2 size={15} className="spin" aria-hidden /> : <CalendarPlus size={15} aria-hidden />}
           Add to calendar
         </button>
         <button type="button" className="btn btn-quiet btn-sm" onClick={() => window.print()}>
           <Printer size={15} aria-hidden />
           Print handout
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function Checklist({
-  result: r,
-  checked,
-  onToggle,
-  onToast,
-}: {
-  result: NoticeResult;
-  checked: Record<string, boolean>;
-  onToggle: (id: string) => void;
-  onToast: (m: string) => void;
-}) {
-  const done = r.actionChecklist.filter((a) => checked[a.id]).length;
-  const total = r.actionChecklist.length;
-  return (
-    <div className="checklist">
-      <div className="progress" aria-hidden="true">
-        <span style={{ width: `${total ? (done / total) * 100 : 0}%` }} />
-      </div>
-      <ul>
-        {r.actionChecklist.map((a) => {
-          const isDone = Boolean(checked[a.id]);
-          return (
-            <li key={a.id}>
-              <button
-                type="button"
-                role="checkbox"
-                aria-checked={isDone}
-                className={`check-item ${isDone ? "is-done" : ""}`}
-                onClick={() => onToggle(a.id)}
-              >
-                {isDone ? <SquareCheck size={18} aria-hidden /> : <Square size={18} aria-hidden />}
-                <span className="check-body">
-                  <span className="check-task">{a.task}</span>
-                  {(a.deadline || a.important) && (
-                    <span className="check-meta">
-                      {a.important && <span className="req">Required</span>}
-                      {a.deadline && <span>{/^within/i.test(a.deadline) ? a.deadline : `By ${a.deadline}`}</span>}
-                    </span>
-                  )}
-                </span>
-              </button>
-            </li>
-          );
-        })}
-      </ul>
-      <div className="details-actions">
-        <span className="message-meta">
-          {done} of {total} done
-        </span>
-        <button
-          type="button"
-          className="btn btn-quiet btn-sm"
-          onClick={async () => {
-            const list = r.actionChecklist
-              .map((a, i) => `${i + 1}. ${a.task}${a.deadline ? ` (${a.deadline})` : ""}`)
-              .join("\n");
-            const ok = await copyText(`${r.title}\n\n${list}`);
-            onToast(ok ? "Checklist copied." : "Couldn't copy the checklist.");
-          }}
-        >
-          <Copy size={15} aria-hidden />
-          Copy checklist
         </button>
       </div>
     </div>

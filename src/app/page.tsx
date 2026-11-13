@@ -1,4 +1,5 @@
 import { NoticeApp } from "@/components/NoticeApp";
+import { ArchitectureDiagram } from "@/components/ArchitectureDiagram";
 
 const STEPS = [
   {
@@ -19,6 +20,7 @@ export default function Home() {
   return (
     <>
       <NoticeApp />
+      <ArchitectureDiagram />
 
       <section className="steps" aria-labelledby="steps-heading">
         <div className="container">
@@ -37,8 +39,8 @@ export default function Home() {
             <div>
               <h3>Works without an AI key</h3>
               <p>
-                The built-in reader extracts facts from the circular itself and never invents details. Connect a
-                Gemini key for full translations and better-written messages.
+                The Python offline reader takes facts from the circular itself and never invents details. Connect a
+                Gemini key for full Tamil translations and better-written messages.
               </p>
             </div>
             <div>
@@ -62,7 +64,7 @@ export default function Home() {
       <footer className="site-footer">
         <div className="container footer-inner">
           <span className="wordmark wordmark-sm">NoticeBridge</span>
-          <span>Built for school offices and class teachers.</span>
+          <span>Built for school offices and class teachers in Salem, Tamil Nadu.</span>
           <a href="https://github.com/srhagul30/School-project-" target="_blank" rel="noopener noreferrer">
             Source on GitHub
           </a>
